@@ -3,11 +3,13 @@ import {
   Bookmark,
   RotateCcw,
   MessageSquare,
-  ArrowRight,
+  ChevronRight,
   Check,
   HeartHandshake,
+  CircleUserRound,
 } from "lucide-react";
 import { contributorLine, type Strategy } from "../data";
+import { iconFor } from "./challengeIcons";
 import { UW, R, TYPE } from "../uw";
 
 // One strategy, two sides.
@@ -50,6 +52,8 @@ export function StrategyCard({
   // The front is always the face in normal flow, so it alone sets the card's
   // height and the back is laid over it at exactly the same size. Anything
   // longer than that scrolls inside the back rather than growing the card.
+  const Icon = iconFor(s.challenges);
+
   const face = (isBack: boolean): React.CSSProperties => ({
     ...FACE,
     backgroundColor: UW.card,
@@ -62,7 +66,7 @@ export function StrategyCard({
   });
 
   return (
-    <div className="relative min-h-[360px] sm:h-full">
+    <div className="relative min-h-[430px] sm:h-full">
       <div
         className="sm:absolute sm:inset-x-0 sm:top-0"
         style={{
@@ -82,13 +86,30 @@ export function StrategyCard({
           {/* ── Front ───────────────────────────────────────────────── */}
           <div
             aria-hidden={flipped}
-            className="flex h-full min-h-[360px] flex-col"
+            className="flex h-full min-h-[430px] flex-col"
             style={face(false)}
           >
-            <div className="flex items-start justify-between gap-3">
-              <p style={{ ...TYPE.label, color: UW.inkSubtle }}>
-                {s.pending ? "In review" : s.tags[0]}
-              </p>
+            <div className="flex items-start gap-3">
+              <span
+                className="flex flex-shrink-0 items-center justify-center"
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  backgroundColor: UW.goldTint,
+                  color: UW.goldInk,
+                }}
+              >
+                <Icon size={19} strokeWidth={1.8} />
+              </span>
+
+              <h3
+                className="min-w-0 flex-1"
+                style={{ ...TYPE.strategyTitle, color: UW.ink }}
+              >
+                {s.title}
+              </h3>
+
               <button
                 onClick={onToggleSave}
                 aria-pressed={saved}
@@ -106,73 +127,100 @@ export function StrategyCard({
               </button>
             </div>
 
-            <h3
-              className="mt-2"
-              style={{ ...TYPE.strategyTitle, color: UW.ink }}
-            >
-              {s.title}
-            </h3>
-            <p className="mt-2" style={{ ...TYPE.body, color: UW.inkMuted }}>
+            <p className="mt-3" style={{ ...TYPE.body, color: UW.inkMuted }}>
               {s.benefit}
             </p>
 
-            <div className="mt-auto pt-4">
-              <p style={{ ...TYPE.meta, color: UW.inkSubtle }}>
-                {contributorLine(s)}
-              </p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {s.pending ? (
+                <Pill label="In review" muted />
+              ) : (
+                s.tags.slice(0, 2).map((tag) => <Pill key={tag} label={tag} />)
+              )}
+            </div>
 
-              <div className="mt-3 flex items-center gap-3">
-                <button
-                  onClick={onFlip}
-                  tabIndex={flipped ? -1 : 0}
-                  className="flex items-center gap-1.5 transition-colors"
-                  style={{
-                    ...TYPE.chip,
-                    fontWeight: 600,
-                    color: UW.purple,
-                    border: `1px solid ${UW.purpleLine}`,
-                    borderRadius: R.control,
-                    padding: "7px 14px",
-                    backgroundColor: "transparent",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = UW.purpleTint)
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "transparent")
-                  }
-                >
-                  View strategy
-                  <ArrowRight size={14} />
-                </button>
-
-                <button
-                  onClick={onToggleLike}
-                  aria-label={liked ? "Remove like" : "Like this strategy"}
-                  className="ml-auto flex items-center gap-1.5"
-                  style={{
-                    ...TYPE.meta,
-                    color: liked ? UW.purple : UW.inkSubtle,
-                  }}
-                >
-                  <Heart
-                    size={14}
-                    fill={liked ? UW.purple : "none"}
-                    strokeWidth={liked ? 0 : 1.6}
-                  />
-                  {s.likes}
-                </button>
-                <button
-                  onClick={onDiscuss}
-                  aria-label={`${commentCount} comments`}
-                  className="flex items-center gap-1.5"
-                  style={{ ...TYPE.meta, color: UW.inkSubtle }}
-                >
-                  <MessageSquare size={14} strokeWidth={1.6} />
-                  {commentCount}
-                </button>
+            {/* Contributor, then a rule that separates who said it from how
+                many people found it worth keeping. */}
+            <div className="mt-4 flex items-start gap-2.5">
+              <CircleUserRound
+                size={26}
+                strokeWidth={1.4}
+                style={{ color: UW.inkSubtle, flexShrink: 0 }}
+              />
+              <div className="min-w-0">
+                <p style={{ ...TYPE.meta, fontWeight: 600, color: UW.inkMid }}>
+                  {contributorLine(s)}
+                </p>
+                <p style={{ ...TYPE.meta, color: UW.inkSubtle }}>
+                  {s.relevanceNote}
+                </p>
               </div>
             </div>
+
+            <div
+              className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1 pt-3.5"
+              style={{ borderTop: `1px solid ${UW.lineSoft}`, ...TYPE.meta }}
+            >
+              {s.pending ? (
+                <span style={{ color: UW.inkSubtle }}>
+                  No community data yet
+                </span>
+              ) : (
+                <>
+                  <button
+                    onClick={onToggleLike}
+                    aria-label={liked ? "Remove like" : "Like this strategy"}
+                    className="flex items-center gap-1.5"
+                    style={{ color: liked ? UW.purple : UW.inkMuted }}
+                  >
+                    <Heart
+                      size={15}
+                      fill={liked ? UW.purple : "none"}
+                      strokeWidth={liked ? 0 : 1.6}
+                    />
+                    {s.likes}
+                  </button>
+                  <span style={{ color: UW.inkMuted }}>{s.tried} tried</span>
+                  <span style={{ fontWeight: 700, color: UW.purple }}>
+                    {s.stillUsing} still using
+                  </span>
+                  <button
+                    onClick={onDiscuss}
+                    aria-label={`${commentCount} comments`}
+                    className="ml-auto flex items-center gap-1.5"
+                    style={{ color: UW.inkSubtle }}
+                  >
+                    <MessageSquare size={14} strokeWidth={1.6} />
+                    {commentCount}
+                  </button>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={onFlip}
+              tabIndex={flipped ? -1 : 0}
+              className="mt-auto flex w-full items-center justify-center gap-2 transition-colors"
+              style={{
+                ...TYPE.chip,
+                fontWeight: 600,
+                color: UW.ink,
+                border: `1px solid ${UW.line}`,
+                borderRadius: R.control,
+                padding: "12px 14px",
+                marginTop: 20,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = UW.band)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
+            >
+              View details
+              <ChevronRight size={15} />
+            </button>
           </div>
 
           {/* ── Back ────────────────────────────────────────────────── */}
@@ -322,5 +370,24 @@ function IconAction({
     >
       {children}
     </button>
+  );
+}
+
+/** Outlined category pill, as on the front of the card. */
+function Pill({ label, muted = false }: { label: string; muted?: boolean }) {
+  return (
+    <span
+      className="uppercase"
+      style={{
+        ...TYPE.label,
+        fontSize: 10.5,
+        padding: "4px 11px",
+        borderRadius: R.chip,
+        color: muted ? UW.inkSubtle : UW.purple,
+        border: `1px solid ${muted ? UW.line : UW.purpleLine}`,
+      }}
+    >
+      {label}
+    </span>
   );
 }

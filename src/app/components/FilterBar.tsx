@@ -132,6 +132,7 @@ export function FilterBar({
           aria-label="Course type"
           style={{
             ...TYPE.chip,
+            width: 210,
             fontWeight: courseType ? 600 : 500,
             padding: "9px 12px",
             borderRadius: R.control,

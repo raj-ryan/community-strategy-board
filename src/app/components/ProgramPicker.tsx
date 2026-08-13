@@ -106,7 +106,7 @@ export function ProgramPicker({
           padding: "6px 10px",
           fontSize: 12.5,
           fontWeight: selected ? 700 : 500,
-          minWidth: 190,
+          width: 210,
           backgroundColor: selected ? UW.purple : UW.white,
           color: selected ? UW.white : UW.inkMid,
           border: `1px solid ${selected ? UW.purple : UW.line}`,
