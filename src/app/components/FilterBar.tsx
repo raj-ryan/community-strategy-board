@@ -6,7 +6,7 @@ import {
   shortChallenge,
 } from "../data";
 import { ProgramPicker } from "./ProgramPicker";
-import { UW, R, TYPE, FONT_SANS } from "../uw";
+import { UW, R, TYPE, CONTROL_BOX, FONT_SANS } from "../uw";
 
 // One question, one row of answers, and two quiet dropdowns.
 //
@@ -131,16 +131,11 @@ export function FilterBar({
           onChange={(e) => onCourseType(e.target.value || null)}
           aria-label="Course type"
           style={{
-            ...TYPE.chip,
-            width: 210,
-            fontWeight: courseType ? 600 : 500,
-            padding: "9px 12px",
-            borderRadius: R.control,
-            fontFamily: FONT_SANS,
+            ...CONTROL_BOX,
+            fontWeight: courseType ? 600 : CONTROL_BOX.fontWeight,
             backgroundColor: UW.card,
             color: courseType ? UW.purple : UW.inkMid,
             border: `1px solid ${courseType ? UW.purpleLine : UW.line}`,
-            outline: "none",
           }}
         >
           <option value="">All course types</option>

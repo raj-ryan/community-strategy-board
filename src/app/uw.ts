@@ -38,6 +38,24 @@ export const R = {
 
 export const FONT_SANS = "'Noto Sans', system-ui, -apple-system, sans-serif";
 
+/**
+ * The two filter dropdowns are a native select and a custom popover trigger.
+ * They only look like one control if every box property comes from here.
+ */
+export const CONTROL_BOX = {
+  width: 210,
+  // An explicit height: a native select and a button resolve line-height
+  // slightly differently, which left them a pixel apart.
+  height: 40,
+  padding: "9px 12px",
+  borderRadius: 10,
+  fontSize: 14,
+  fontWeight: 500,
+  lineHeight: "20px",
+  fontFamily: FONT_SANS,
+  outline: "none",
+} as const;
+
 /** The board's type scale, applied as-is rather than improvised per component. */
 export const TYPE = {
   boardTitle: { fontSize: 32, fontWeight: 700, lineHeight: "40px" },

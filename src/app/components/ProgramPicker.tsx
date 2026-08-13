@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Search, Check, X } from "lucide-react";
 import { ALL_PROGRAMS, PROGRAM_GROUPS } from "../data";
-import { UW, FONT_SANS } from "../uw";
+import { UW, CONTROL_BOX, FONT_SANS } from "../uw";
 
 // Thirty programs is too many to scan in a horizontal rail — finding one meant
 // dragging sideways past everything else. This is a searchable popover: type a
@@ -103,13 +103,11 @@ export function ProgramPicker({
         aria-expanded={open}
         className="flex items-center gap-2 transition-colors"
         style={{
-          padding: "6px 10px",
-          fontSize: 12.5,
-          fontWeight: selected ? 700 : 500,
-          width: 210,
-          backgroundColor: selected ? UW.purple : UW.white,
-          color: selected ? UW.white : UW.inkMid,
-          border: `1px solid ${selected ? UW.purple : UW.line}`,
+          ...CONTROL_BOX,
+          fontWeight: selected ? 600 : CONTROL_BOX.fontWeight,
+          backgroundColor: UW.card,
+          color: selected ? UW.purple : UW.inkMid,
+          border: `1px solid ${selected ? UW.purpleLine : UW.line}`,
         }}
       >
         <span className="flex-1 truncate text-left">{program}</span>
@@ -130,11 +128,11 @@ export function ProgramPicker({
             }}
             style={{ display: "flex", opacity: 0.85 }}
           >
-            <X size={12} />
+            <X size={13} />
           </span>
         )}
         <ChevronDown
-          size={13}
+          size={15}
           style={{
             transition: "transform 150ms",
             transform: open ? "rotate(180deg)" : "none",
