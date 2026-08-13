@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   X,
   Search,
@@ -136,27 +137,31 @@ export function FilterBar({
         </select>
       </div>
 
-      {/* Shortcuts */}
-      <div className="flex flex-wrap items-center gap-1.5">
+      {/* Shortcuts, on one line */}
+      <div className="flex items-center gap-2">
         <span
           className="flex-shrink-0 font-bold uppercase"
           style={{ fontSize: 9, letterSpacing: "0.1em", color: UW.inkSubtle }}
         >
           Common problems
         </span>
-        {CHALLENGES.map((c) => (
-          <Chip
-            key={c}
-            challenge={c}
-            count={counts[c] ?? 0}
-            active={challenge === c}
-            onClick={() => onChallenge(challenge === c ? null : c)}
-          />
-        ))}
+
+        <ChipRail>
+          {CHALLENGES.map((c) => (
+            <Chip
+              key={c}
+              challenge={c}
+              count={counts[c] ?? 0}
+              active={challenge === c}
+              onClick={() => onChallenge(challenge === c ? null : c)}
+            />
+          ))}
+        </ChipRail>
+
         {anyActive && (
           <button
             onClick={onClear}
-            className="ml-auto flex flex-shrink-0 items-center gap-1 hover:underline"
+            className="flex flex-shrink-0 items-center gap-1 hover:underline"
             style={{ fontSize: 11.5, fontWeight: 600, color: UW.purple }}
           >
             <X size={11} />
@@ -165,6 +170,78 @@ export function FilterBar({
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * Keeps the shortcuts on one line at any width. Fades mark the edge that has
+ * more behind it, and a vertical wheel scrolls sideways so a mouse without a
+ * horizontal wheel is not stuck.
+ */
+function ChipRail({ children }: { children: React.ReactNode }) {
+  const rail = useRef<HTMLDivElement>(null);
+  const [edges, setEdges] = useState({ left: false, right: false });
+
+  const measure = useCallback(() => {
+    const el = rail.current;
+    if (!el) return;
+    const overflow = el.scrollWidth - el.clientWidth;
+    // When the rail stops overflowing — a wider window, or a filter that
+    // shortens it — the browser clamps scrollLeft without firing a scroll
+    // event, so the fades have to be cleared here rather than inferred.
+    if (overflow <= 4) {
+      setEdges({ left: false, right: false });
+      return;
+    }
+    const left = Math.min(el.scrollLeft, overflow);
+    setEdges({ left: left > 4, right: left < overflow - 4 });
+  }, []);
+
+  useEffect(() => {
+    measure();
+    const el = rail.current;
+    if (!el) return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [measure]);
+
+  return (
+    <div className="relative min-w-0 flex-1">
+      <div
+        ref={rail}
+        className="csb-rail flex items-center gap-1.5 overflow-x-auto"
+        style={{ scrollbarWidth: "none", scrollSnapType: "x proximity" }}
+        onScroll={measure}
+        onWheel={(e) => {
+          const el = rail.current;
+          if (!el || el.scrollWidth <= el.clientWidth) return;
+          if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+          el.scrollLeft += e.deltaY;
+        }}
+      >
+        {children}
+      </div>
+
+      {edges.left && <Fade side="left" />}
+      {edges.right && <Fade side="right" />}
+    </div>
+  );
+}
+
+function Fade({ side }: { side: "left" | "right" }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-y-0"
+      style={{
+        [side]: 0,
+        width: 28,
+        background: `linear-gradient(to ${side === "left" ? "right" : "left"}, ${
+          UW.white
+        }, rgba(255,255,255,0))`,
+      }}
+    />
   );
 }
 
@@ -186,9 +263,10 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       title={challenge}
-      className="flex items-center gap-1.5 transition-colors"
+      className="flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors"
       style={{
         padding: "4px 9px",
+        scrollSnapAlign: "start",
         borderRadius: 999,
         fontSize: 12,
         fontWeight: active ? 700 : 500,
