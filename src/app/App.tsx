@@ -60,6 +60,18 @@ export default function App() {
     [challenge, program, courseType, query, sort, strategies],
   );
 
+  // How many strategies each program would show under the filters already set,
+  // so the program list can say "Law (JD) 0" before you pick it.
+  const programCounts = useMemo(() => {
+    const pool = filterStrategies(
+      { challenge, program: ALL_PROGRAMS, courseType, query, sort },
+      strategies,
+    );
+    const out: Record<string, number> = {};
+    for (const s of pool) out[s.program] = (out[s.program] ?? 0) + 1;
+    return { counts: out, total: pool.length };
+  }, [challenge, courseType, query, sort, strategies]);
+
   const visible = filtersActive || showAll ? results : results.slice(0, PREVIEW_COUNT);
   const stats = useMemo(() => boardStats(strategies), [strategies]);
   const counts = useMemo(() => countsByChallenge(strategies), [strategies]);
@@ -212,6 +224,8 @@ export default function App() {
                   program={program}
                   courseType={courseType}
                   counts={counts}
+                  programCounts={programCounts.counts}
+                  programTotal={programCounts.total}
                   onChallenge={c => {
                     setChallenge(c);
                     setShowAll(false);
