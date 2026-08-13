@@ -24,6 +24,7 @@ export function StrategyCard({
   liked,
   commentCount,
   rankBasis,
+  pool,
   onOpen,
   onToggleSave,
   onToggleLike,
@@ -33,12 +34,13 @@ export function StrategyCard({
   liked: boolean;
   commentCount: number;
   rankBasis: RankBasis;
+  pool: Strategy[];
   onOpen: () => void;
   onToggleSave: () => void;
   onToggleLike: () => void;
 }) {
   const pct = keptPercent(s);
-  const badge = s.pending ? null : badgeFor(s, rankBasis);
+  const badge = s.pending ? null : badgeFor(s, rankBasis, pool);
 
   return (
     <article
@@ -60,7 +62,7 @@ export function StrategyCard({
             }}
           >
             {s.pending ? (
-              "Awaiting moderator review"
+              "In review"
             ) : (
               <>
                 <Trophy size={11} />
@@ -130,9 +132,9 @@ export function StrategyCard({
           ) : (
             <>
               <div
-                className="mt-2.5 flex items-center gap-2.5 pt-2.5"
+                className="mt-2.5 flex items-center gap-3 pt-2.5"
                 style={{
-                  fontSize: 11.5,
+                  fontSize: 12,
                   color: UW.inkSubtle,
                   borderTop: `1px solid ${UW.lineSoft}`,
                 }}
@@ -140,22 +142,31 @@ export function StrategyCard({
                 <button
                   onClick={onToggleLike}
                   aria-label={liked ? "Remove like" : "Like this strategy"}
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1.5"
                   style={{
                     color: liked ? UW.purple : UW.inkSubtle,
-                    fontWeight: 600,
+                    fontWeight: 700,
                   }}
                 >
                   <Heart
-                    size={12}
+                    size={13}
                     fill={liked ? UW.purple : "none"}
                     strokeWidth={liked ? 0 : 1.6}
                   />
-                  {s.likes + (liked ? 1 : 0)}
+                  {s.likes}
+                  <span style={{ fontWeight: 500 }}>likes</span>
                 </button>
-                <span>{s.tried} tried</span>
-                <span style={{ fontWeight: 700, color: UW.purple }}>
-                  {s.stillUsing} still using
+                <span
+                  className="flex items-center gap-1.5"
+                  style={{ color: saved ? UW.goldInk : UW.inkSubtle, fontWeight: 700 }}
+                >
+                  <Bookmark
+                    size={12}
+                    fill={saved ? UW.gold : "none"}
+                    strokeWidth={1.7}
+                  />
+                  {s.saves}
+                  <span style={{ fontWeight: 500 }}>saved</span>
                 </span>
               </div>
 
@@ -176,7 +187,8 @@ export function StrategyCard({
                   className="mt-1"
                   style={{ fontSize: 10, color: UW.inkSubtle }}
                 >
-                  {s.stillUsing} of {s.tried} kept using it after several weeks
+                  {s.stillUsing} of {s.tried} who tried it were still using it
+                  weeks later
                 </p>
               </div>
             </>

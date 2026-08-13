@@ -30,6 +30,7 @@ export function StrategyModal({
   liked,
   thanked,
   rankBasis,
+  pool,
   user,
   onClose,
   onToggleSave,
@@ -45,6 +46,7 @@ export function StrategyModal({
   liked: boolean;
   thanked: boolean;
   rankBasis: RankBasis;
+  pool: Strategy[];
   user: CurrentUser;
   onClose: () => void;
   onToggleSave: () => void;
@@ -81,7 +83,7 @@ export function StrategyModal({
   const questions = comments.filter(c => c.kind === "question").length;
   const experiences = comments.length - questions;
   const total = comments.reduce((n, c) => n + 1 + c.replies.length, 0);
-  const rank = s.pending ? 0 : rankOf(s.id, rankBasis);
+  const rank = s.pending ? 0 : rankOf(s.id, rankBasis, pool);
   const basis = RANK_BASES.find(b => b.id === rankBasis)!;
 
   function submit() {
@@ -235,17 +237,21 @@ export function StrategyModal({
               </p>
               {s.pending ? (
                 <p style={{ fontSize: 14, lineHeight: "22px", color: UW.inkMid }}>
-                  This strategy was just contributed and is waiting for a moderator to
-                  review it. It has no community data yet: the tried and still-using counts
-                  appear once other students report back on it.
+                  This strategy has just been submitted and is with the review team. It has
+                  no community data yet: likes, saves, and the still-using counts appear
+                  once it is published and other students report back on it.
                 </p>
               ) : (
                 <>
                   <p style={{ fontSize: 14, lineHeight: "22px", color: UW.inkMid }}>
-                    <strong style={{ color: UW.purple }}>{s.stillUsing} of {s.tried}</strong>{" "}
-                    students who tried this strategy reported still using it several weeks
-                    later ({keptPercent(s)}%). <strong>{s.likes}</strong> students liked it,
-                    which records interest rather than whether it worked.
+                    <strong>{s.likes}</strong> students liked this strategy and{" "}
+                    <strong>{s.saves}</strong> saved it to their quarter.{" "}
+                    <strong style={{ color: UW.purple }}>
+                      {s.stillUsing} of {s.tried}
+                    </strong>{" "}
+                    who tried it reported still using it several weeks later (
+                    {keptPercent(s)}%), which is the closest thing here to evidence that
+                    it works rather than that it sounded good.
                   </p>
                   <div className="mt-3" style={{ height: 6, backgroundColor: UW.white }}>
                     <div
@@ -275,6 +281,7 @@ export function StrategyModal({
               >
                 {saved ? <Check size={15} /> : <Bookmark size={15} />}
                 {saved ? "Saved to My Quarter" : "Add to My Quarter"}
+                <span style={{ fontWeight: 500, opacity: 0.75 }}>· {s.saves}</span>
               </button>
               <button
                 onClick={onToggleLike}
@@ -288,7 +295,7 @@ export function StrategyModal({
                 }}
               >
                 <Heart size={14} fill={liked ? UW.purple : "none"} strokeWidth={liked ? 0 : 1.7} />
-                {liked ? "Liked" : "Like"} · {s.likes + (liked ? 1 : 0)}
+                {liked ? "Liked" : "Like"} · {s.likes}
               </button>
               <button
                 onClick={onThank}

@@ -7,9 +7,9 @@ import { UW, FONT_SERIF, FONT_SANS } from "../uw";
 
 // Contribution form.
 //
-// A submission becomes a real card on the board immediately, flagged as
-// awaiting moderator review, so the contributor can see what they made rather
-// than reading a confirmation message and having to trust it.
+// A submission becomes a real card on the board immediately, flagged as in
+// review, so the contributor can see what they made rather than reading a
+// confirmation message and having to trust it.
 
 interface FormState {
   title: string;
@@ -92,6 +92,7 @@ export function ShareModal({
       courseTypes,
       challenges: [form.challenge],
       likes: 0,
+      saves: 0,
       tried: 1,
       stillUsing: 1,
       whyHelps:
@@ -126,9 +127,9 @@ export function ShareModal({
             className="mx-auto max-w-sm"
             style={{ fontSize: 14, lineHeight: "22px", color: UW.inkMid }}
           >
-            It is visible to you now and marked as awaiting review. An upper-year student
-            moderator will check the wording and look for duplicates before it appears to
-            everyone else.
+            It is visible to you now and marked as in review. The team will check the
+            wording and look for duplicates, and once it is approved it will be published
+            to everyone.
           </p>
           <div className="mt-6 flex justify-center gap-2">
             <button
@@ -396,9 +397,9 @@ export function ShareModal({
             color: UW.inkMid,
           }}
         >
-          Strategies are reviewed by upper-year student moderators before appearing to
-          everyone. Moderators may clarify wording, combine duplicates, or ask for more
-          detail. Please do not name an individual instructor.
+          Every submission is reviewed by the team before it is published. We may clarify
+          wording, combine duplicates, or ask you for more detail. Please do not name an
+          individual instructor.
         </p>
 
         <div className="flex gap-2">

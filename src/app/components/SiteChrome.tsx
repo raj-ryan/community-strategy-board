@@ -17,7 +17,7 @@ export function Masthead({
   return (
     <header>
       <div style={{ backgroundColor: UW.purple }}>
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-6 py-2">
+        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4 px-6 py-2">
           <Wordmark />
           <nav className="hidden items-center gap-5 md:flex">
             {UTILITY_LINKS.map(l => (
@@ -43,7 +43,7 @@ export function Masthead({
       <div style={{ height: 3, backgroundColor: UW.gold }} />
 
       <div style={{ backgroundColor: UW.white, borderBottom: `1px solid ${UW.line}` }}>
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-4 px-6 pb-0 pt-4">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-4 px-6 pb-0 pt-4">
           <div>
             <p
               className="font-bold uppercase"
@@ -81,7 +81,7 @@ export function Masthead({
           </button>
         </div>
 
-        <div className="mx-auto max-w-[1280px] px-6">
+        <div className="mx-auto max-w-[1600px] px-6">
           <nav className="mt-3 flex items-center gap-6">
             {(
               [
@@ -109,7 +109,7 @@ export function Masthead({
 
       <div style={{ backgroundColor: UW.band, borderBottom: `1px solid ${UW.line}` }}>
         <div
-          className="mx-auto flex max-w-[1280px] items-center gap-1.5 px-6 py-2"
+          className="mx-auto flex max-w-[1600px] items-center gap-1.5 px-6 py-2"
           style={{ fontSize: 11.5, color: UW.inkMuted }}
         >
           <a href="#" className="hover:underline">UW Home</a>
@@ -173,7 +173,7 @@ export function Footer({ onShare, onAbout }: { onShare: () => void; onAbout: () 
           borderBottom: `3px solid ${UW.gold}`,
         }}
       >
-        <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-6 px-6 py-8">
+        <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-6 px-6 py-8">
           <div className="max-w-2xl">
             <h2
               style={{ fontFamily: FONT_SERIF, fontSize: 21, fontWeight: 600, color: UW.purple }}
@@ -181,8 +181,8 @@ export function Footer({ onShare, onAbout }: { onShare: () => void; onAbout: () 
               Finished a quarter? Write down the thing you wish you had known.
             </h2>
             <p className="mt-1.5" style={{ fontSize: 13.5, lineHeight: "21px", color: UW.inkMid }}>
-              One strategy, three steps, five minutes. Contributions are reviewed by
-              upper-year student moderators and you may post anonymously.
+              One strategy, three steps, five minutes. Every submission is reviewed by the
+              team before it is published, and you may post anonymously.
             </p>
           </div>
           <button
@@ -203,7 +203,7 @@ export function Footer({ onShare, onAbout }: { onShare: () => void; onAbout: () 
       </div>
 
       <div style={{ backgroundColor: UW.purple, color: "#D9D2E6" }}>
-        <div className="mx-auto max-w-[1280px] px-6 py-10">
+        <div className="mx-auto max-w-[1600px] px-6 py-10">
           <div className="grid gap-8 md:grid-cols-4">
             <div>
               <Wordmark small />

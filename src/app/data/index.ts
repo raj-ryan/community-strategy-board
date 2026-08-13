@@ -16,48 +16,37 @@ export * from "./search";
 
 export const RANK_BASES = [
   {
-    id: "kept",
-    label: "Still using it",
-    short: "Kept",
-    column: "Still using",
-    explain:
-      "Ranked by how many students reported still using the strategy several weeks after trying it.",
-  },
-  {
-    id: "tried",
-    label: "Most tried",
-    short: "Tried",
-    column: "Tried",
-    explain:
-      "Ranked by how many students reported trying the strategy at least once.",
-  },
-  {
     id: "liked",
     label: "Most liked",
     short: "Liked",
     column: "Likes",
+    unit: "likes",
     explain:
-      "Ranked by likes only. Likes record interest, not whether a strategy worked.",
+      "Ranked by how many students liked the strategy. A like records interest, and is the quickest signal students give.",
+  },
+  {
+    id: "saved",
+    label: "Most saved",
+    short: "Saved",
+    column: "Saves",
+    unit: "saves",
+    explain:
+      "Ranked by how many students saved the strategy to My Quarter, which means they intended to actually use it.",
   },
 ] as const;
 
 export type RankBasis = (typeof RANK_BASES)[number]["id"];
 
 export function rankValue(s: Strategy, basis: RankBasis): number {
-  switch (basis) {
-    case "tried":
-      return s.tried;
-    case "liked":
-      return s.likes;
-    default:
-      return s.stillUsing;
-  }
+  return basis === "saved" ? s.saves : s.likes;
 }
 
 export function keptPercent(s: Strategy): number {
   return Math.round((s.stillUsing / s.tried) * 100);
 }
 
+// Every ranking helper takes the live pool, because likes and saves change as
+// the person using the board likes and saves things.
 export function rankAll(basis: RankBasis, pool: Strategy[] = STRATEGIES) {
   return [...pool]
     .filter(s => !s.pending)
@@ -66,8 +55,12 @@ export function rankAll(basis: RankBasis, pool: Strategy[] = STRATEGIES) {
 }
 
 /** Board-wide rank of one strategy on one measure, 1-based. */
-export function rankOf(id: number, basis: RankBasis): number {
-  return rankAll(basis).findIndex(r => r.strategy.id === id) + 1;
+export function rankOf(
+  id: number,
+  basis: RankBasis,
+  pool: Strategy[] = STRATEGIES,
+): number {
+  return rankAll(basis, pool).findIndex(r => r.strategy.id === id) + 1;
 }
 
 /** Rank within a single challenge, used for the badge on a card. */
@@ -75,12 +68,11 @@ export function rankInChallenge(
   s: Strategy,
   challenge: string,
   basis: RankBasis,
+  pool: Strategy[] = STRATEGIES,
 ): number {
-  const pool = STRATEGIES.filter(
-    x => !x.pending && x.challenges.includes(challenge),
-  );
+  const within = pool.filter(x => !x.pending && x.challenges.includes(challenge));
   return (
-    [...pool]
+    [...within]
       .sort((a, b) => rankValue(b, basis) - rankValue(a, basis))
       .findIndex(x => x.id === s.id) + 1
   );
@@ -93,16 +85,19 @@ export function rankInChallenge(
 export function badgeFor(
   s: Strategy,
   basis: RankBasis,
+  pool: Strategy[] = STRATEGIES,
 ): { text: string; strong: boolean } | null {
-  const overall = rankOf(s.id, basis);
+  const overall = rankOf(s.id, basis, pool);
   const basisLabel = RANK_BASES.find(b => b.id === basis)!.short.toLowerCase();
   if (overall > 0 && overall <= 3) {
     return { text: `#${overall} most ${basisLabel} on the board`, strong: true };
   }
   for (const challenge of s.challenges) {
-    const rank = rankInChallenge(s, challenge, basis);
-    if (rank === 1) {
-      return { text: `#1 most ${basisLabel} · ${shortChallenge(challenge)}`, strong: false };
+    if (rankInChallenge(s, challenge, basis, pool) === 1) {
+      return {
+        text: `#1 most ${basisLabel} · ${shortChallenge(challenge)}`,
+        strong: false,
+      };
     }
   }
   return null;
@@ -127,9 +122,8 @@ export function shortChallenge(challenge: string): string {
 export type SortId = RankBasis | "relevance" | "az";
 
 export const SORTS: Array<{ id: SortId; label: string }> = [
-  { id: "kept", label: "Most still using" },
-  { id: "tried", label: "Most tried" },
   { id: "liked", label: "Most liked" },
+  { id: "saved", label: "Most saved" },
   { id: "az", label: "A to Z" },
 ];
 

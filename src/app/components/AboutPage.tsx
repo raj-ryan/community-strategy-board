@@ -52,7 +52,7 @@ export function AboutPage({
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   return (
-    <div className="mx-auto max-w-[1280px] px-6 py-8">
+    <div className="mx-auto max-w-[1600px] px-6 py-8">
       <button
         onClick={onBack}
         className="mb-5 flex items-center gap-1.5 font-semibold hover:underline"
@@ -168,15 +168,15 @@ export function AboutPage({
             <div className="my-3 grid gap-px sm:grid-cols-3" style={{ backgroundColor: UW.line }}>
               <Definition
                 term="Likes"
-                body="How many students marked the strategy as interesting. Likes record attention, not effectiveness. A strategy can be liked by people who never tried it."
+                body="How many students marked the strategy as interesting. A like takes a second and records attention, not effectiveness. A strategy can be liked by people who never tried it."
               />
               <Definition
-                term="Tried"
-                body="How many students reported using the strategy at least once. This is the denominator for everything else."
+                term="Saves"
+                body="How many students added it to My Quarter, meaning they intended to actually use it. A save is a stronger signal than a like because it costs more thought."
               />
               <Definition
-                term="Still using"
-                body="How many of those students reported still using it several weeks later. Shown as a count against the number who tried, never as a bare percentage."
+                term="Still using it"
+                body="Of the students who tried the strategy, how many reported still using it several weeks later. Always shown as a count against the number who tried, never as a bare percentage."
               />
             </div>
             <p>
@@ -188,9 +188,9 @@ export function AboutPage({
 
           <Section id="ranking" title="How ranking works">
             <p>
-              There is no single score and no overall leaderboard. Concept testing found
-              that students disagree about which measure to trust, so the board keeps them
-              separate and always names the one it is sorting by.
+              There is no single score. Concept testing found that students disagree about
+              which measure to trust, so the board keeps them separate and always names the
+              one it is sorting by. You can switch between them anywhere a ranking appears.
             </p>
             <ul className="my-3 flex flex-col gap-2">
               {RANK_BASES.map(b => (
@@ -214,10 +214,17 @@ export function AboutPage({
 
           <Section id="review" title="How strategies are reviewed">
             <p>
-              Contributions are reviewed by upper-year student moderators before they appear
-              publicly. Moderators may clarify wording, combine duplicates, or ask for more
-              detail. They do not rewrite your experience or remove a strategy for being
-              unusual.
+              Every submission is reviewed by the team before it is published. Your
+              strategy appears on your own board immediately, marked{" "}
+              <strong>In review</strong>, and once it is approved it is published to
+              everyone. Reviews are usually completed within a few working days.
+            </p>
+            <p>
+              Review means checking the wording is clear, combining duplicates, and asking
+              for more detail where a step is hard to follow. We do not rewrite your
+              experience or reject a strategy for being unusual — a strategy that only
+              works in a clinical placement or a studio is worth publishing precisely
+              because it is specific.
             </p>
             <p>
               A submission that names an individual instructor, shares another student's

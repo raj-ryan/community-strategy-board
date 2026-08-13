@@ -36,8 +36,8 @@ export default function App() {
   const [program, setProgram] = useState<string>(ALL_PROGRAMS);
   const [courseType, setCourseType] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortId>("kept");
-  const [rankBasis, setRankBasis] = useState<RankBasis>("kept");
+  const [sort, setSort] = useState<SortId>("liked");
+  const [rankBasis, setRankBasis] = useState<RankBasis>("liked");
   const [showAll, setShowAll] = useState(false);
 
   const [strategies, setStrategies] = useState<Strategy[]>(STRATEGIES);
@@ -98,8 +98,23 @@ export default function App() {
     setQuery("");
   }
 
+  /** Adjusts a counter on one strategy so every view of it agrees. */
+  function bump(id: number, field: "likes" | "saves", delta: number) {
+    setStrategies(prev =>
+      prev.map(s => (s.id === id ? { ...s, [field]: s[field] + delta } : s)),
+    );
+  }
+
   function toggleSave(id: number) {
-    setSaved(prev => (prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]));
+    const isSaved = saved.includes(id);
+    setSaved(prev => (isSaved ? prev.filter(x => x !== id) : [...prev, id]));
+    bump(id, "saves", isSaved ? -1 : 1);
+  }
+
+  function toggleLike(id: number) {
+    const isLiked = liked.has(id);
+    setLiked(prev => toggle(prev, id));
+    bump(id, "likes", isLiked ? -1 : 1);
   }
 
   function postComment(
@@ -165,7 +180,7 @@ export default function App() {
         <>
           {/* Compact introduction */}
           <div style={{ backgroundColor: UW.band, borderBottom: `1px solid ${UW.line}` }}>
-            <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-6 py-3">
+            <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-6 py-3">
               <p style={{ fontSize: 13.5, lineHeight: "20px", color: UW.inkMid, maxWidth: 680 }}>
                 Practical strategies for UW course systems, written by graduate students who
                 have already worked them out.{" "}
@@ -189,8 +204,8 @@ export default function App() {
             </div>
           </div>
 
-          <div className="mx-auto max-w-[1280px] px-6 py-6">
-            <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="mx-auto max-w-[1600px] px-6 py-6">
+            <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
               <main className="min-w-0">
                 <FilterBar
                   challenge={challenge}
@@ -330,7 +345,7 @@ export default function App() {
                   </div>
                 ) : (
                   <>
-                    <div className="mt-5 grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="mt-5 grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                       {visible.map(s => (
                         <StrategyCard
                           key={s.id}
@@ -339,9 +354,10 @@ export default function App() {
                           liked={liked.has(s.id)}
                           commentCount={commentCounts[s.id] ?? 0}
                           rankBasis={rankBasis}
+                          pool={strategies}
                           onOpen={() => setOpenId(s.id)}
                           onToggleSave={() => toggleSave(s.id)}
-                          onToggleLike={() => setLiked(prev => toggle(prev, s.id))}
+                          onToggleLike={() => toggleLike(s.id)}
                         />
                       ))}
                     </div>
@@ -414,10 +430,11 @@ export default function App() {
           liked={liked.has(open.id)}
           thanked={thanked.has(open.id)}
           rankBasis={rankBasis}
+          pool={strategies}
           user={USER}
           onClose={() => setOpenId(null)}
           onToggleSave={() => toggleSave(open.id)}
-          onToggleLike={() => setLiked(prev => toggle(prev, open.id))}
+          onToggleLike={() => toggleLike(open.id)}
           onThank={() => setThanked(prev => new Set(prev).add(open.id))}
           onPost={input => postComment(open.id, input)}
           onReply={(commentId, body, anonymous) =>

@@ -78,15 +78,13 @@ export function RankingTable({
               <Th style={{ width: 44, textAlign: "center" }}>#</Th>
               <Th>Strategy</Th>
               <Th style={{ width: 150 }}>Program</Th>
-              <Th style={{ width: 70, textAlign: "right" }} active={basis === "tried"}>
-                Tried
-              </Th>
-              <Th style={{ width: 150, textAlign: "right" }} active={basis === "kept"}>
-                Still using
-              </Th>
               <Th style={{ width: 70, textAlign: "right" }} active={basis === "liked"}>
                 Likes
               </Th>
+              <Th style={{ width: 70, textAlign: "right" }} active={basis === "saved"}>
+                Saves
+              </Th>
+              <Th style={{ width: 160, textAlign: "right" }}>Still using it</Th>
               <Th style={{ width: 60, textAlign: "right" }}>Replies</Th>
             </tr>
           </thead>
@@ -123,7 +121,28 @@ export function RankingTable({
                   </span>
                 </Td>
                 <Td style={{ fontSize: 12, color: UW.inkMuted }}>{shortProgram(s.program)}</Td>
-                <Td style={{ textAlign: "right" }}>{s.tried}</Td>
+                <Td style={{ textAlign: "right" }}>
+                  <span className="inline-flex items-center gap-1">
+                    <Heart
+                      size={11}
+                      fill={likedIds.includes(s.id) ? UW.purple : "none"}
+                      strokeWidth={likedIds.includes(s.id) ? 0 : 1.6}
+                      style={{ color: UW.purple }}
+                    />
+                    {s.likes}
+                  </span>
+                </Td>
+                <Td style={{ textAlign: "right" }}>
+                  <span className="inline-flex items-center gap-1">
+                    <Bookmark
+                      size={11}
+                      fill={savedIds.includes(s.id) ? UW.gold : "none"}
+                      strokeWidth={1.6}
+                      style={{ color: savedIds.includes(s.id) ? UW.goldInk : UW.inkMuted }}
+                    />
+                    {s.saves}
+                  </span>
+                </Td>
                 <Td style={{ textAlign: "right" }}>
                   <span style={{ fontWeight: 700, color: UW.purple }}>{s.stillUsing}</span>
                   <span style={{ color: UW.inkSubtle }}> of {s.tried}</span>
@@ -139,17 +158,6 @@ export function RankingTable({
                         backgroundColor: UW.purple,
                       }}
                     />
-                  </span>
-                </Td>
-                <Td style={{ textAlign: "right" }}>
-                  <span className="inline-flex items-center gap-1">
-                    <Heart
-                      size={11}
-                      fill={likedIds.includes(s.id) ? UW.purple : "none"}
-                      strokeWidth={likedIds.includes(s.id) ? 0 : 1.6}
-                      style={{ color: UW.purple }}
-                    />
-                    {s.likes + (likedIds.includes(s.id) ? 1 : 0)}
                   </span>
                 </Td>
                 <Td style={{ textAlign: "right", color: UW.inkMuted }}>

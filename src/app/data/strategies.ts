@@ -15,6 +15,8 @@ export interface Strategy {
   courseTypes: string[];
   challenges: string[];
   likes: number;
+  /** How many students saved this to My Quarter. */
+  saves: number;
   tried: number;
   stillUsing: number;
   whyHelps: string;
@@ -47,7 +49,7 @@ export function contributorLine(s: Strategy): string {
   return `${who} · ${shortProgram(s.program)}, ${s.year}`;
 }
 
-export const STRATEGIES: Strategy[] = [
+const RAW: Array<Omit<Strategy, "saves">> = [
   // ── Original four ───────────────────────────────────────────────────────────
   {
     id: 1,
@@ -1284,5 +1286,13 @@ export const STRATEGIES: Strategy[] = [
     effort: "1 hour, once",
   },
 ];
+
+// Save counts are seeded rather than authored per card: a strategy people kept
+// using is one more of them bookmarked it first. Derived deterministically so
+// every usability-test participant sees the same numbers.
+export const STRATEGIES: Strategy[] = RAW.map(s => ({
+  ...s,
+  saves: Math.round(s.stillUsing * 0.38) + ((s.id * 7) % 11),
+}));
 
 export const STRATEGY_BY_ID = new Map(STRATEGIES.map(s => [s.id, s]));

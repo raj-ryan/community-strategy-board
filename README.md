@@ -20,11 +20,11 @@ concept is designed to live inside UW course systems.
   harder, so the board opens with nine strategies and narrows when you pick a difficulty.
 - **An expanded view** with the steps, when to use it, what the numbers mean, and a
   discussion thread beside it — questions, experiences, replies.
-- **Rankings that name their measure.** Still using it, most tried, and most liked are
-  kept separate and never merged into one score. Strategies are ranked; students are not.
+- **Rankings that name their measure.** Most liked and most saved are kept separate and
+  never merged into one score. Strategies are ranked; students are not.
 - **My Quarter**, a saved list rather than a workflow to maintain.
 - **A contribution form** that puts your strategy on the board immediately, flagged as
-  awaiting moderator review.
+  in review until the team approves and publishes it.
 
 State is held in memory, so a refresh returns the prototype to its starting condition.
 That is deliberate: it gives every usability-test participant the same first screen.
@@ -35,9 +35,9 @@ The concept test with two international graduate students (A5) drove several cho
 
 | Finding | What the interface does |
 | --- | --- |
-| Participants disagreed about whether likes or continued use was the trustworthy signal | Three separate ranking measures, each labelled; likes described as recording interest, not effectiveness |
+| Participants disagreed about whether likes or continued use was the trustworthy signal | Ranking splits into most liked and most saved, each labelled; likes described as recording interest, not effectiveness |
 | One participant wanted the denominator kept visible | Counts always read "161 of 190", never a bare percentage |
-| Public recognition felt embarrassing rather than motivating | No contributor leaderboard, no points, anonymity available on every post |
+| Public recognition felt embarrassing rather than motivating | Strategies are ranked, students are not; no contributor leaderboard, no points, anonymity on every post |
 | "Too many cards makes choosing difficult" | Nine strategies on first load, challenge chips carrying counts |
 | "I would not open another website" | Framed as a Canvas-linked resource, readable without signing in |
 | "My Workflow" was not understood | Replaced with My Quarter, a two-or-three item saved list |

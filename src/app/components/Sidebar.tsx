@@ -150,8 +150,8 @@ export function RankingPanel({
                   {strategy.title}
                 </p>
                 <p className="mt-0.5" style={{ fontSize: 10.5, color: UW.inkSubtle }}>
-                  {rankValue(strategy, basis)} {meta.column.toLowerCase()}
-                  {basis === "kept" && ` of ${strategy.tried} · ${keptPercent(strategy)}%`}
+                  {rankValue(strategy, basis)} {meta.unit} ·{" "}
+                  {keptPercent(strategy)}% still using it
                 </p>
               </button>
             </li>
