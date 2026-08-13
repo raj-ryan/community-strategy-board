@@ -146,7 +146,10 @@ export function filterStrategies(
   f: Filters,
   pool: Strategy[] = STRATEGIES,
 ): Strategy[] {
+  // A strategy waiting on review is shown back to its author on its own, never
+  // mixed into the board everyone else is reading.
   const narrowed = pool.filter((s) => {
+    if (s.pending) return false;
     if (f.challenge && !s.challenges.includes(f.challenge)) return false;
     if (f.program !== ALL_PROGRAMS && s.program !== f.program) return false;
     if (f.courseType && !s.courseTypes.includes(f.courseType)) return false;
@@ -177,7 +180,7 @@ export function countsByChallenge(pool: Strategy[] = STRATEGIES) {
   return Object.fromEntries(
     CHALLENGES.map((c) => [
       c,
-      pool.filter((s) => s.challenges.includes(c)).length,
+      pool.filter((s) => !s.pending && s.challenges.includes(c)).length,
     ]),
   ) as Record<string, number>;
 }

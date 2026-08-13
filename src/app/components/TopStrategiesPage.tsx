@@ -9,7 +9,10 @@ import {
 import { UW, R, TYPE } from "../uw";
 
 // Ranking has its own page so the board itself stays about finding one card.
-// Two measures, never merged, each one saying plainly what it counts.
+// Two measures, never merged, each one saying plainly what it counts, and only
+// the head of each list: a ranking of fifty is a directory, not a ranking.
+
+const TOP_N = 10;
 
 export function TopStrategiesPage({
   pool,
@@ -26,7 +29,7 @@ export function TopStrategiesPage({
   onBasis: (b: RankBasis) => void;
   onOpen: (id: number) => void;
 }) {
-  const rows = rankAll(basis, pool);
+  const rows = rankAll(basis, pool).slice(0, TOP_N);
   const meta = RANK_BASES.find((b) => b.id === basis)!;
 
   return (

@@ -5,9 +5,10 @@ import {
   MessageSquare,
   ArrowRight,
   Check,
+  HeartHandshake,
 } from "lucide-react";
 import { contributorLine, type Strategy } from "../data";
-import { UW, R, TYPE, FONT_SANS } from "../uw";
+import { UW, R, TYPE } from "../uw";
 
 // One strategy, two sides.
 //
@@ -46,23 +47,22 @@ export function StrategyCard({
   onThank: () => void;
   onDiscuss: () => void;
 }) {
-  // The visible face sits in flow and sets the height; the hidden one is
-  // absolute on top of it, so a longer back grows over the rows below instead
-  // of resizing the whole row.
+  // The front is always the face in normal flow, so it alone sets the card's
+  // height and the back is laid over it at exactly the same size. Anything
+  // longer than that scrolls inside the back rather than growing the card.
   const face = (isBack: boolean): React.CSSProperties => ({
     ...FACE,
-    ...(flipped === isBack
-      ? { position: "relative" }
-      : { position: "absolute", inset: 0 }),
     backgroundColor: UW.card,
     border: `1px solid ${saved && !isBack ? UW.goldLine : UW.line}`,
     borderRadius: R.card,
     padding: 20,
-    ...(isBack ? { transform: "rotateY(180deg)" } : null),
+    ...(isBack
+      ? { position: "absolute", inset: 0, transform: "rotateY(180deg)" }
+      : { position: "relative" }),
   });
 
   return (
-    <div className="relative min-h-[290px] sm:h-full">
+    <div className="relative min-h-[360px] sm:h-full">
       <div
         className="sm:absolute sm:inset-x-0 sm:top-0"
         style={{
@@ -82,7 +82,7 @@ export function StrategyCard({
           {/* ── Front ───────────────────────────────────────────────── */}
           <div
             aria-hidden={flipped}
-            className="flex h-full min-h-[290px] flex-col"
+            className="flex h-full min-h-[360px] flex-col"
             style={face(false)}
           >
             <div className="flex items-start justify-between gap-3">
@@ -178,11 +178,8 @@ export function StrategyCard({
           {/* ── Back ────────────────────────────────────────────────── */}
           <div
             aria-hidden={!flipped}
-            className="flex min-h-full flex-col"
-            style={{
-              ...face(true),
-              boxShadow: flipped ? "0 8px 30px rgba(34,32,30,0.13)" : "none",
-            }}
+            className="flex flex-col overflow-hidden"
+            style={face(true)}
           >
             <div className="flex items-start justify-between gap-3">
               <p style={{ ...TYPE.label, color: UW.inkSubtle }}>
@@ -199,7 +196,7 @@ export function StrategyCard({
               </button>
             </div>
 
-            <ol className="mt-3 flex flex-col gap-2.5">
+            <ol className="csb-rail mt-3 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto">
               {s.steps.map((step, i) => (
                 <li
                   key={i}
@@ -223,18 +220,18 @@ export function StrategyCard({
               ))}
             </ol>
 
-            <div className="mt-auto pt-4">
+            <div className="flex-shrink-0 pt-3">
               <div
                 style={{
                   borderTop: `1px solid ${UW.lineSoft}`,
-                  paddingTop: 14,
+                  paddingTop: 12,
                 }}
               >
                 <p style={{ ...TYPE.label, color: UW.inkSubtle }}>
                   Best time to use it
                 </p>
                 <p
-                  className="mt-1.5"
+                  className="mt-1"
                   style={{ ...TYPE.body, color: UW.inkMuted }}
                 >
                   {s.bestTime}
@@ -244,7 +241,8 @@ export function StrategyCard({
                 </p>
               </div>
 
-              <div className="mt-4 flex gap-2">
+              {/* One action row, so the back stays the height of the front. */}
+              <div className="mt-3 flex gap-2">
                 <button
                   onClick={onToggleSave}
                   tabIndex={flipped ? 0 : -1}
@@ -252,7 +250,7 @@ export function StrategyCard({
                   style={{
                     ...TYPE.chip,
                     fontWeight: 600,
-                    padding: "11px 14px",
+                    padding: "10px 12px",
                     borderRadius: R.control,
                     backgroundColor: saved ? UW.goldTint : UW.purple,
                     color: saved ? UW.goldInk : UW.white,
@@ -262,58 +260,67 @@ export function StrategyCard({
                   {saved ? <Check size={15} /> : <Bookmark size={15} />}
                   {saved ? "Saved" : "Add to My Quarter"}
                 </button>
-                <button
+
+                <IconAction
+                  onClick={onDiscuss}
+                  tabIndex={flipped ? 0 : -1}
+                  label={`Ask a question or add a comment${
+                    commentCount ? ` · ${commentCount} so far` : ""
+                  }`}
+                  active={commentCount > 0}
+                >
+                  <MessageSquare size={16} strokeWidth={1.7} />
+                </IconAction>
+
+                <IconAction
                   onClick={onThank}
                   tabIndex={flipped ? 0 : -1}
-                  aria-label={
+                  label={
                     thanked ? "Contributor thanked" : "Thank the contributor"
                   }
-                  title={
-                    thanked ? "Contributor thanked" : "Thank the contributor"
-                  }
-                  className="flex flex-shrink-0 items-center justify-center transition-colors"
-                  style={{
-                    width: 44,
-                    borderRadius: R.control,
-                    fontSize: 15,
-                    backgroundColor: thanked ? UW.purpleTint : UW.card,
-                    border: `1px solid ${thanked ? UW.purpleLine : UW.line}`,
-                  }}
+                  active={thanked}
                 >
-                  🙏
-                </button>
+                  <HeartHandshake size={16} strokeWidth={1.7} />
+                </IconAction>
               </div>
-
-              <button
-                onClick={onDiscuss}
-                tabIndex={flipped ? 0 : -1}
-                className="mt-2 w-full transition-colors"
-                style={{
-                  ...TYPE.chip,
-                  fontFamily: FONT_SANS,
-                  fontWeight: 600,
-                  padding: "10px 14px",
-                  borderRadius: R.control,
-                  color: UW.goldInk,
-                  border: `1px solid ${UW.goldLine}`,
-                  backgroundColor: "transparent",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.backgroundColor = UW.goldTint)
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.backgroundColor = "transparent")
-                }
-              >
-                Ask a question / Add a comment
-                {commentCount > 0 && (
-                  <span style={{ fontWeight: 400 }}> · {commentCount}</span>
-                )}
-              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/** Square icon button used for the two secondary actions on the back. */
+function IconAction({
+  children,
+  onClick,
+  label,
+  active,
+  tabIndex,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  label: string;
+  active: boolean;
+  tabIndex: number;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      tabIndex={tabIndex}
+      aria-label={label}
+      title={label}
+      className="flex flex-shrink-0 items-center justify-center transition-colors"
+      style={{
+        width: 42,
+        borderRadius: R.control,
+        backgroundColor: active ? UW.purpleTint : UW.card,
+        color: active ? UW.purple : UW.inkMuted,
+        border: `1px solid ${active ? UW.purpleLine : UW.line}`,
+      }}
+    >
+      {children}
+    </button>
   );
 }

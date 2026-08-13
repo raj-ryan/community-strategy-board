@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { X, Bookmark } from "lucide-react";
+import { X, Bookmark, Clock } from "lucide-react";
 import {
   ALL_PROGRAMS,
   STRATEGIES,
@@ -114,6 +114,8 @@ export default function App() {
     .map((id) => strategies.find((s) => s.id === id))
     .filter((s): s is Strategy => Boolean(s));
 
+  const submissions = strategies.filter((s) => s.pending);
+
   function toggle<T>(set: Set<T>, value: T) {
     const next = new Set(set);
     next.has(value) ? next.delete(value) : next.add(value);
@@ -143,12 +145,13 @@ export default function App() {
 
   /** Used by the ranking page, My Quarter and a fresh submission. */
   function openStrategy(id: number) {
+    const target = strategies.find((s) => s.id === id);
     setView("board");
     setShowAll(true);
     setFlipped((prev) => new Set(prev).add(id));
     requestAnimationFrame(() =>
       document
-        .getElementById(`strategy-${id}`)
+        .getElementById(target?.pending ? "your-submissions" : `strategy-${id}`)
         ?.scrollIntoView({ behavior: "smooth", block: "center" }),
     );
   }
@@ -321,6 +324,16 @@ export default function App() {
             </>
           )}
 
+          {submissions.length > 0 && (
+            <YourSubmissions
+              submissions={submissions}
+              flipped={flipped}
+              commentCounts={commentCounts}
+              onFlip={(id) => setFlipped((prev) => toggle(prev, id))}
+              onDiscuss={setDiscussId}
+            />
+          )}
+
           <MyQuarter
             saved={savedStrategies}
             onRemove={toggleSave}
@@ -361,6 +374,58 @@ export default function App() {
 }
 
 // ── Pieces ────────────────────────────────────────────────────────────────────
+
+function YourSubmissions({
+  submissions,
+  flipped,
+  commentCounts,
+  onFlip,
+  onDiscuss,
+}: {
+  submissions: Strategy[];
+  flipped: Set<number>;
+  commentCounts: Record<number, number>;
+  onFlip: (id: number) => void;
+  onDiscuss: (id: number) => void;
+}) {
+  return (
+    <section id="your-submissions" className="mt-12 scroll-mt-6">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h2
+          className="flex items-center gap-2"
+          style={{ ...TYPE.sectionQuestion, color: UW.ink }}
+        >
+          <Clock size={17} style={{ color: UW.inkMuted }} />
+          Your submission{submissions.length > 1 ? "s" : ""}
+        </h2>
+        <p style={{ ...TYPE.meta, color: UW.inkSubtle }}>
+          Under review. Visible only to you until a moderator has read it, then
+          it appears on the board for everyone.
+        </p>
+      </div>
+
+      <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {submissions.map((s) => (
+          <div key={s.id} id={`strategy-${s.id}`} className="h-full">
+            <StrategyCard
+              strategy={s}
+              flipped={flipped.has(s.id)}
+              saved={false}
+              liked={false}
+              thanked={false}
+              commentCount={commentCounts[s.id] ?? 0}
+              onFlip={() => onFlip(s.id)}
+              onToggleSave={() => {}}
+              onToggleLike={() => {}}
+              onThank={() => {}}
+              onDiscuss={() => onDiscuss(s.id)}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 function MyQuarter({
   saved,
