@@ -1,9 +1,20 @@
 import { useMemo, useState } from "react";
-import { Search, X, LayoutGrid, ListOrdered, Info } from "lucide-react";
+import { LayoutGrid, ListOrdered, Info } from "lucide-react";
 import {
-  ALL_PROGRAMS, SORTS, STRATEGIES, boardStats, countsByChallenge,
-  filterStrategies, seedCommentsFor, shortChallenge, suggestionsFor,
-  type Comment, type CommentKind, type RankBasis, type SortId, type Strategy,
+  ALL_PROGRAMS,
+  SORTS,
+  STRATEGIES,
+  boardStats,
+  countsByChallenge,
+  filterStrategies,
+  seedCommentsFor,
+  shortChallenge,
+  suggestionsFor,
+  type Comment,
+  type CommentKind,
+  type RankBasis,
+  type SortId,
+  type Strategy,
 } from "./data";
 import { UW, FONT_SANS, FONT_SERIF } from "./uw";
 import { StrategyCard } from "./components/StrategyCard";
@@ -13,7 +24,10 @@ import { RankingTable } from "./components/RankingTable";
 import { AboutPage } from "./components/AboutPage";
 import { Masthead, Footer, type View } from "./components/SiteChrome";
 import {
-  MyQuarterPanel, RankingPanel, SupportPanel, HowItWorksPanel,
+  MyQuarterPanel,
+  RankingPanel,
+  SupportPanel,
+  HowItWorksPanel,
 } from "./components/Sidebar";
 import { ShareModal } from "./components/ShareModal";
 
@@ -46,17 +60,24 @@ export default function App() {
   const [thanked, setThanked] = useState<Set<number>>(new Set());
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
   const [threads, setThreads] = useState<Record<number, Comment[]>>(() =>
-    Object.fromEntries(STRATEGIES.map(s => [s.id, seedCommentsFor(s.id)])),
+    Object.fromEntries(STRATEGIES.map((s) => [s.id, seedCommentsFor(s.id)])),
   );
 
   const [openId, setOpenId] = useState<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
   const filtersActive =
-    challenge !== null || program !== ALL_PROGRAMS || courseType !== null || query.trim() !== "";
+    challenge !== null ||
+    program !== ALL_PROGRAMS ||
+    courseType !== null ||
+    query.trim() !== "";
 
   const results = useMemo(
-    () => filterStrategies({ challenge, program, courseType, query, sort }, strategies),
+    () =>
+      filterStrategies(
+        { challenge, program, courseType, query, sort },
+        strategies,
+      ),
     [challenge, program, courseType, query, sort, strategies],
   );
 
@@ -72,7 +93,8 @@ export default function App() {
     return { counts: out, total: pool.length };
   }, [challenge, courseType, query, sort, strategies]);
 
-  const visible = filtersActive || showAll ? results : results.slice(0, PREVIEW_COUNT);
+  const visible =
+    filtersActive || showAll ? results : results.slice(0, PREVIEW_COUNT);
   const stats = useMemo(() => boardStats(strategies), [strategies]);
   const counts = useMemo(() => countsByChallenge(strategies), [strategies]);
 
@@ -84,16 +106,17 @@ export default function App() {
     return out;
   }, [threads]);
 
-  const open = openId === null ? null : strategies.find(s => s.id === openId) ?? null;
+  const open =
+    openId === null ? null : (strategies.find((s) => s.id === openId) ?? null);
 
   /** Applies the viewer's own comment likes on top of the stored counts. */
   const openThread = useMemo(() => {
     if (!open) return [];
     const bump = (n: number, id: string) => n + (likedComments.has(id) ? 1 : 0);
-    return (threads[open.id] ?? []).map(c => ({
+    return (threads[open.id] ?? []).map((c) => ({
       ...c,
       likes: bump(c.likes, c.id),
-      replies: c.replies.map(r => ({ ...r, likes: bump(r.likes, r.id) })),
+      replies: c.replies.map((r) => ({ ...r, likes: bump(r.likes, r.id) })),
     }));
   }, [open, threads, likedComments]);
 
@@ -112,26 +135,33 @@ export default function App() {
 
   /** Adjusts a counter on one strategy so every view of it agrees. */
   function bump(id: number, field: "likes" | "saves", delta: number) {
-    setStrategies(prev =>
-      prev.map(s => (s.id === id ? { ...s, [field]: s[field] + delta } : s)),
+    setStrategies((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, [field]: s[field] + delta } : s)),
     );
   }
 
   function toggleSave(id: number) {
     const isSaved = saved.includes(id);
-    setSaved(prev => (isSaved ? prev.filter(x => x !== id) : [...prev, id]));
+    setSaved((prev) =>
+      isSaved ? prev.filter((x) => x !== id) : [...prev, id],
+    );
     bump(id, "saves", isSaved ? -1 : 1);
   }
 
   function toggleLike(id: number) {
     const isLiked = liked.has(id);
-    setLiked(prev => toggle(prev, id));
+    setLiked((prev) => toggle(prev, id));
     bump(id, "likes", isLiked ? -1 : 1);
   }
 
   function postComment(
     strategyId: number,
-    input: { kind: CommentKind; body: string; outcome?: Comment["outcome"]; anonymous: boolean },
+    input: {
+      kind: CommentKind;
+      body: string;
+      outcome?: Comment["outcome"];
+      anonymous: boolean;
+    },
   ) {
     const entry: Comment = {
       id: `own-${Date.now()}`,
@@ -145,13 +175,21 @@ export default function App() {
       likes: 0,
       replies: [],
     };
-    setThreads(prev => ({ ...prev, [strategyId]: [entry, ...(prev[strategyId] ?? [])] }));
+    setThreads((prev) => ({
+      ...prev,
+      [strategyId]: [entry, ...(prev[strategyId] ?? [])],
+    }));
   }
 
-  function postReply(strategyId: number, commentId: string, body: string, anonymous: boolean) {
-    setThreads(prev => ({
+  function postReply(
+    strategyId: number,
+    commentId: string,
+    body: string,
+    anonymous: boolean,
+  ) {
+    setThreads((prev) => ({
       ...prev,
-      [strategyId]: (prev[strategyId] ?? []).map(c =>
+      [strategyId]: (prev[strategyId] ?? []).map((c) =>
         c.id !== commentId
           ? c
           : {
@@ -174,28 +212,51 @@ export default function App() {
   }
 
   function addStrategy(s: Strategy) {
-    setStrategies(prev => [s, ...prev]);
-    setThreads(prev => ({ ...prev, [s.id]: [] }));
+    setStrategies((prev) => [s, ...prev]);
+    setThreads((prev) => ({ ...prev, [s.id]: [] }));
   }
 
   return (
     <div
       className="min-h-screen"
-      style={{ backgroundColor: UW.white, fontFamily: FONT_SANS, color: UW.ink }}
+      style={{
+        backgroundColor: UW.white,
+        fontFamily: FONT_SANS,
+        color: UW.ink,
+      }}
     >
       <GlobalStyle />
-      <Masthead view={view} onView={setView} onShare={() => setShareOpen(true)} />
+      <Masthead
+        view={view}
+        onView={setView}
+        onShare={() => setShareOpen(true)}
+      />
 
       {view === "about" ? (
-        <AboutPage onBack={() => setView("board")} onShare={() => setShareOpen(true)} />
+        <AboutPage
+          onBack={() => setView("board")}
+          onShare={() => setShareOpen(true)}
+        />
       ) : (
         <>
           {/* Compact introduction */}
-          <div style={{ backgroundColor: UW.band, borderBottom: `1px solid ${UW.line}` }}>
+          <div
+            style={{
+              backgroundColor: UW.band,
+              borderBottom: `1px solid ${UW.line}`,
+            }}
+          >
             <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-6 py-3">
-              <p style={{ fontSize: 13.5, lineHeight: "20px", color: UW.inkMid, maxWidth: 680 }}>
-                Practical strategies for UW course systems, written by graduate students who
-                have already worked them out.{" "}
+              <p
+                style={{
+                  fontSize: 13.5,
+                  lineHeight: "20px",
+                  color: UW.inkMid,
+                  maxWidth: 680,
+                }}
+              >
+                Practical strategies for UW course systems, written by graduate
+                students who have already worked them out.{" "}
                 <button
                   onClick={() => setView("about")}
                   className="font-semibold hover:underline"
@@ -210,7 +271,10 @@ export default function App() {
               >
                 <Fact value={stats.strategies} label="strategies" />
                 <Fact value={stats.programs} label="programs" />
-                <Fact value={stats.tried.toLocaleString()} label="times tried" />
+                <Fact
+                  value={stats.tried.toLocaleString()}
+                  label="times tried"
+                />
                 <Fact value={`${stats.keptPct}%`} label="kept using" />
               </dl>
             </div>
@@ -224,9 +288,11 @@ export default function App() {
                   program={program}
                   courseType={courseType}
                   counts={counts}
+                  query={query}
+                  onQuery={setQuery}
                   programCounts={programCounts.counts}
                   programTotal={programCounts.total}
-                  onChallenge={c => {
+                  onChallenge={(c) => {
                     setChallenge(c);
                     setShowAll(false);
                   }}
@@ -242,55 +308,34 @@ export default function App() {
                   style={{ borderBottom: `2px solid ${UW.purple}` }}
                 >
                   <p style={{ fontSize: 13, color: UW.inkMid }}>
-                    <span style={{ fontWeight: 700, color: UW.purple }}>{results.length}</span>{" "}
+                    <span style={{ fontWeight: 700, color: UW.purple }}>
+                      {results.length}
+                    </span>{" "}
                     {results.length === 1 ? "strategy" : "strategies"}
                     {challenge && (
                       <>
-                        {" "}for <strong>{shortChallenge(challenge)}</strong>
+                        {" "}
+                        for <strong>{shortChallenge(challenge)}</strong>
                       </>
                     )}
                     {program !== ALL_PROGRAMS && (
                       <>
-                        {" "}in <strong>{program}</strong>
+                        {" "}
+                        in <strong>{program}</strong>
                       </>
                     )}
                     {query.trim() && (
                       <>
-                        {" "}matching <strong>“{query.trim()}”</strong>
+                        {" "}
+                        matching <strong>“{query.trim()}”</strong>
                       </>
                     )}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    <div
-                      className="flex items-center gap-2"
-                      style={{ border: `1px solid ${UW.line}`, padding: "5px 9px" }}
-                    >
-                      <Search size={13} style={{ color: UW.inkSubtle }} />
-                      <input
-                        value={query}
-                        onChange={e => setQuery(e.target.value)}
-                        placeholder="Search strategies"
-                        aria-label="Search strategies"
-                        style={{
-                          fontSize: 12.5,
-                          border: "none",
-                          outline: "none",
-                          width: 168,
-                          backgroundColor: "transparent",
-                          fontFamily: FONT_SANS,
-                        }}
-                      />
-                      {query && (
-                        <button onClick={() => setQuery("")} aria-label="Clear search">
-                          <X size={12} style={{ color: UW.inkSubtle }} />
-                        </button>
-                      )}
-                    </div>
-
                     <select
                       value={sort}
-                      onChange={e => setSort(e.target.value as SortId)}
+                      onChange={(e) => setSort(e.target.value as SortId)}
                       aria-label="Sort strategies"
                       style={{
                         fontSize: 12.5,
@@ -302,7 +347,7 @@ export default function App() {
                         outline: "none",
                       }}
                     >
-                      {SORTS.map(s => (
+                      {SORTS.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.label}
                         </option>
@@ -312,8 +357,16 @@ export default function App() {
                     <div className="flex">
                       {(
                         [
-                          ["cards", <LayoutGrid key="g" size={13} />, "Card view"],
-                          ["table", <ListOrdered key="l" size={13} />, "Ranking table"],
+                          [
+                            "cards",
+                            <LayoutGrid key="g" size={13} />,
+                            "Card view",
+                          ],
+                          [
+                            "table",
+                            <ListOrdered key="l" size={13} />,
+                            "Ranking table",
+                          ],
                         ] as Array<["cards" | "table", React.ReactNode, string]>
                       ).map(([id, icon, label]) => (
                         <button
@@ -325,7 +378,8 @@ export default function App() {
                           style={{
                             padding: "7px 10px",
                             marginLeft: -1,
-                            backgroundColor: layout === id ? UW.purple : UW.white,
+                            backgroundColor:
+                              layout === id ? UW.purple : UW.white,
                             color: layout === id ? UW.white : UW.inkMuted,
                             border: `1px solid ${layout === id ? UW.purple : UW.line}`,
                           }}
@@ -360,7 +414,7 @@ export default function App() {
                 ) : (
                   <>
                     <div className="mt-5 grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                      {visible.map(s => (
+                      {visible.map((s) => (
                         <StrategyCard
                           key={s.id}
                           strategy={s}
@@ -376,33 +430,39 @@ export default function App() {
                       ))}
                     </div>
 
-                    {!filtersActive && !showAll && results.length > PREVIEW_COUNT && (
-                      <div
-                        className="mt-5 flex flex-wrap items-center justify-between gap-3 p-4"
-                        style={{ backgroundColor: UW.band, border: `1px solid ${UW.line}` }}
-                      >
-                        <p
-                          className="flex items-center gap-2"
-                          style={{ fontSize: 13, color: UW.inkMid }}
-                        >
-                          <Info size={14} style={{ color: UW.purple }} />
-                          Showing the {PREVIEW_COUNT} strategies most students kept using.
-                          Choose what you need help with to narrow the board.
-                        </p>
-                        <button
-                          onClick={() => setShowAll(true)}
-                          className="font-semibold"
+                    {!filtersActive &&
+                      !showAll &&
+                      results.length > PREVIEW_COUNT && (
+                        <div
+                          className="mt-5 flex flex-wrap items-center justify-between gap-3 p-4"
                           style={{
-                            fontSize: 12.5,
-                            padding: "8px 16px",
-                            color: UW.purple,
-                            border: `1px solid ${UW.purple}`,
+                            backgroundColor: UW.band,
+                            border: `1px solid ${UW.line}`,
                           }}
                         >
-                          Show all {results.length} strategies
-                        </button>
-                      </div>
-                    )}
+                          <p
+                            className="flex items-center gap-2"
+                            style={{ fontSize: 13, color: UW.inkMid }}
+                          >
+                            <Info size={14} style={{ color: UW.purple }} />
+                            Showing the {PREVIEW_COUNT} strategies most students
+                            kept using. Choose what you need help with to narrow
+                            the board.
+                          </p>
+                          <button
+                            onClick={() => setShowAll(true)}
+                            className="font-semibold"
+                            style={{
+                              fontSize: 12.5,
+                              padding: "8px 16px",
+                              color: UW.purple,
+                              border: `1px solid ${UW.purple}`,
+                            }}
+                          >
+                            Show all {results.length} strategies
+                          </button>
+                        </div>
+                      )}
                   </>
                 )}
               </main>
@@ -410,7 +470,7 @@ export default function App() {
               <aside className="flex flex-col gap-4 lg:sticky lg:top-5">
                 <MyQuarterPanel
                   saved={saved
-                    .map(id => strategies.find(s => s.id === id))
+                    .map((id) => strategies.find((s) => s.id === id))
                     .filter((s): s is Strategy => Boolean(s))}
                   total={stats.strategies}
                   onRemove={toggleSave}
@@ -434,7 +494,10 @@ export default function App() {
         </>
       )}
 
-      <Footer onShare={() => setShareOpen(true)} onAbout={() => setView("about")} />
+      <Footer
+        onShare={() => setShareOpen(true)}
+        onAbout={() => setView("about")}
+      />
 
       {open && (
         <StrategyModal
@@ -449,18 +512,18 @@ export default function App() {
           onClose={() => setOpenId(null)}
           onToggleSave={() => toggleSave(open.id)}
           onToggleLike={() => toggleLike(open.id)}
-          onThank={() => setThanked(prev => new Set(prev).add(open.id))}
-          onPost={input => postComment(open.id, input)}
+          onThank={() => setThanked((prev) => new Set(prev).add(open.id))}
+          onPost={(input) => postComment(open.id, input)}
           onReply={(commentId, body, anonymous) =>
             postReply(open.id, commentId, body, anonymous)
           }
-          onLikeComment={id => setLikedComments(prev => toggle(prev, id))}
+          onLikeComment={(id) => setLikedComments((prev) => toggle(prev, id))}
         />
       )}
 
       {shareOpen && (
         <ShareModal
-          nextId={Math.max(...strategies.map(s => s.id)) + 1}
+          nextId={Math.max(...strategies.map((s) => s.id)) + 1}
           onClose={() => setShareOpen(false)}
           onSubmit={addStrategy}
           onOpenSubmission={setOpenId}
@@ -475,7 +538,14 @@ export default function App() {
 function Fact({ value, label }: { value: string | number; label: string }) {
   return (
     <span className="flex items-baseline gap-1.5">
-      <dd style={{ fontFamily: FONT_SERIF, fontSize: 17, fontWeight: 600, color: UW.purple }}>
+      <dd
+        style={{
+          fontFamily: FONT_SERIF,
+          fontSize: 17,
+          fontWeight: 600,
+          color: UW.purple,
+        }}
+      >
         {value}
       </dd>
       <dt>{label}</dt>
@@ -500,7 +570,8 @@ function EmptyState({
       style={{ backgroundColor: UW.band, border: `1px dashed ${UW.line}` }}
     >
       <p style={{ fontSize: 15, fontWeight: 600, color: UW.ink }}>
-        Nothing matches {query.trim() ? `“${query.trim()}”` : "this combination"} yet.
+        Nothing matches{" "}
+        {query.trim() ? `“${query.trim()}”` : "this combination"} yet.
       </p>
 
       {suggestions.length > 0 ? (
@@ -509,7 +580,7 @@ function EmptyState({
             The closest strategies on the board:
           </p>
           <ul className="mx-auto mt-3 flex max-w-md flex-col gap-1.5">
-            {suggestions.map(s => (
+            {suggestions.map((s) => (
               <li key={s.id}>
                 <button
                   onClick={() => onOpen(s.id)}
@@ -529,14 +600,20 @@ function EmptyState({
         </>
       ) : (
         <p className="mt-1" style={{ fontSize: 13, color: UW.inkMuted }}>
-          Try a different word, or clear the filters and browse by what you need help with.
+          Try a different word, or clear the filters and browse by what you need
+          help with.
         </p>
       )}
 
       <button
         onClick={onClear}
         className="mt-5 font-semibold"
-        style={{ padding: "9px 18px", fontSize: 12.5, color: UW.white, backgroundColor: UW.purple }}
+        style={{
+          padding: "9px 18px",
+          fontSize: 12.5,
+          color: UW.white,
+          backgroundColor: UW.purple,
+        }}
       >
         Clear all filters
       </button>
