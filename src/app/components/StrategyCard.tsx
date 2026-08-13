@@ -1,17 +1,5 @@
-import {
-  Heart,
-  MessageSquare,
-  Bookmark,
-  ArrowRight,
-  Trophy,
-} from "lucide-react";
-import {
-  contributorLine,
-  keptPercent,
-  badgeFor,
-  type RankBasis,
-  type Strategy,
-} from "../data";
+import { Heart, MessageSquare, Bookmark, ArrowRight } from "lucide-react";
+import { contributorLine, keptPercent, type Strategy } from "../data";
 import { UW, FONT_SERIF } from "../uw";
 
 // The card answers one question only: is this useful for me? Steps, evidence
@@ -23,8 +11,6 @@ export function StrategyCard({
   saved,
   liked,
   commentCount,
-  rankBasis,
-  pool,
   onOpen,
   onToggleSave,
   onToggleLike,
@@ -33,14 +19,11 @@ export function StrategyCard({
   saved: boolean;
   liked: boolean;
   commentCount: number;
-  rankBasis: RankBasis;
-  pool: Strategy[];
   onOpen: () => void;
   onToggleSave: () => void;
   onToggleLike: () => void;
 }) {
   const pct = keptPercent(s);
-  const badge = s.pending ? null : badgeFor(s, rankBasis, pool);
 
   return (
     <article
@@ -51,24 +34,16 @@ export function StrategyCard({
       }}
     >
       <div className="flex flex-1 flex-col p-4">
-        {/* Rank badge / pending state */}
-        {(badge || s.pending) && (
+        {s.pending && (
           <p
-            className="mb-2 flex items-center gap-1.5 font-bold uppercase"
+            className="mb-2 font-bold uppercase"
             style={{
               fontSize: 10,
               letterSpacing: "0.07em",
-              color: s.pending ? UW.inkSubtle : UW.goldInk,
+              color: UW.inkSubtle,
             }}
           >
-            {s.pending ? (
-              "In review"
-            ) : (
-              <>
-                <Trophy size={11} />
-                {badge!.text}
-              </>
-            )}
+            In review
           </p>
         )}
 
@@ -158,7 +133,10 @@ export function StrategyCard({
                 </button>
                 <span
                   className="flex items-center gap-1.5"
-                  style={{ color: saved ? UW.goldInk : UW.inkSubtle, fontWeight: 700 }}
+                  style={{
+                    color: saved ? UW.goldInk : UW.inkSubtle,
+                    fontWeight: 700,
+                  }}
                 >
                   <Bookmark
                     size={12}
@@ -168,28 +146,13 @@ export function StrategyCard({
                   {s.saves}
                   <span style={{ fontWeight: 500 }}>saved</span>
                 </span>
-              </div>
-
-              <div
-                className="mt-2"
-                title={`${s.stillUsing} of ${s.tried} students`}
-              >
-                <div style={{ height: 4, backgroundColor: UW.bandDeep }}>
-                  <div
-                    style={{
-                      width: `${pct}%`,
-                      height: "100%",
-                      backgroundColor: UW.purple,
-                    }}
-                  />
-                </div>
-                <p
-                  className="mt-1"
-                  style={{ fontSize: 10, color: UW.inkSubtle }}
+                <span
+                  className="ml-auto"
+                  title={`${s.stillUsing} of ${s.tried} students who tried it`}
+                  style={{ fontWeight: 600, color: UW.inkMuted }}
                 >
-                  {s.stillUsing} of {s.tried} who tried it were still using it
-                  weeks later
-                </p>
+                  {pct}% kept it
+                </span>
               </div>
             </>
           )}

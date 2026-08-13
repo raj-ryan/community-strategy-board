@@ -16,19 +16,14 @@ import {
   type SortId,
   type Strategy,
 } from "./data";
-import { UW, FONT_SANS, FONT_SERIF } from "./uw";
+import { UW, FONT_SANS } from "./uw";
 import { StrategyCard } from "./components/StrategyCard";
 import { StrategyModal, type CurrentUser } from "./components/StrategyModal";
 import { FilterBar } from "./components/FilterBar";
 import { RankingTable } from "./components/RankingTable";
 import { AboutPage } from "./components/AboutPage";
 import { Masthead, Footer, type View } from "./components/SiteChrome";
-import {
-  MyQuarterPanel,
-  RankingPanel,
-  SupportPanel,
-  HowItWorksPanel,
-} from "./components/Sidebar";
+import { MyQuarterPanel, RankingPanel } from "./components/Sidebar";
 import { ShareModal } from "./components/ShareModal";
 
 // The signed-in student. Comments and contributions are attributed to this
@@ -40,7 +35,7 @@ const USER: CurrentUser = {
 };
 
 /** Cards shown before the board is filtered, so the first screen is choosable. */
-const PREVIEW_COUNT = 9;
+const PREVIEW_COUNT = 6;
 
 export default function App() {
   const [view, setView] = useState<View>("board");
@@ -265,18 +260,6 @@ export default function App() {
                   How this works
                 </button>
               </p>
-              <dl
-                className="flex flex-wrap items-center gap-x-5 gap-y-1"
-                style={{ fontSize: 12, color: UW.inkMuted }}
-              >
-                <Fact value={stats.strategies} label="strategies" />
-                <Fact value={stats.programs} label="programs" />
-                <Fact
-                  value={stats.tried.toLocaleString()}
-                  label="times tried"
-                />
-                <Fact value={`${stats.keptPct}%`} label="kept using" />
-              </dl>
             </div>
           </div>
 
@@ -421,8 +404,6 @@ export default function App() {
                           saved={saved.includes(s.id)}
                           liked={liked.has(s.id)}
                           commentCount={commentCounts[s.id] ?? 0}
-                          rankBasis={rankBasis}
-                          pool={strategies}
                           onOpen={() => setOpenId(s.id)}
                           onToggleSave={() => toggleSave(s.id)}
                           onToggleLike={() => toggleLike(s.id)}
@@ -445,9 +426,8 @@ export default function App() {
                             style={{ fontSize: 13, color: UW.inkMid }}
                           >
                             <Info size={14} style={{ color: UW.purple }} />
-                            Showing the {PREVIEW_COUNT} strategies most students
-                            kept using. Choose what you need help with to narrow
-                            the board.
+                            Showing {PREVIEW_COUNT} of {results.length}. Search,
+                            or pick a common problem, to narrow the board.
                           </p>
                           <button
                             onClick={() => setShowAll(true)}
@@ -486,8 +466,6 @@ export default function App() {
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                 />
-                <HowItWorksPanel />
-                <SupportPanel />
               </aside>
             </div>
           </div>
@@ -534,24 +512,6 @@ export default function App() {
 }
 
 // ── Pieces ────────────────────────────────────────────────────────────────────
-
-function Fact({ value, label }: { value: string | number; label: string }) {
-  return (
-    <span className="flex items-baseline gap-1.5">
-      <dd
-        style={{
-          fontFamily: FONT_SERIF,
-          fontSize: 17,
-          fontWeight: 600,
-          color: UW.purple,
-        }}
-      >
-        {value}
-      </dd>
-      <dt>{label}</dt>
-    </span>
-  );
-}
 
 function EmptyState({
   query,

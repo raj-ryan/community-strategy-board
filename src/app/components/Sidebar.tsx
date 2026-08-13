@@ -1,7 +1,11 @@
 import { X, Bookmark, Info, LifeBuoy, Trophy } from "lucide-react";
 import {
-  RANK_BASES, keptPercent, rankAll, rankValue, shortProgram,
-  type RankBasis, type Strategy,
+  RANK_BASES,
+  rankAll,
+  rankValue,
+  shortProgram,
+  type RankBasis,
+  type Strategy,
 } from "../data";
 import { UW, FONT_SERIF } from "../uw";
 
@@ -18,7 +22,10 @@ export function MyQuarterPanel({
 }) {
   return (
     <Panel>
-      <PanelHeader icon={<Bookmark size={13} style={{ color: UW.gold }} />} title="My Quarter">
+      <PanelHeader
+        icon={<Bookmark size={13} style={{ color: UW.gold }} />}
+        title="My Quarter"
+      >
         <span style={{ fontSize: 11, fontWeight: 700, color: UW.gold }}>
           {saved.length} of {total}
         </span>
@@ -26,7 +33,8 @@ export function MyQuarterPanel({
 
       <div className="p-4">
         <p style={{ fontSize: 12, lineHeight: "18px", color: UW.inkMuted }}>
-          Strategies you want to try this quarter. Two or three is usually enough.
+          Strategies you want to try this quarter. Two or three is usually
+          enough.
         </p>
 
         {saved.length === 0 ? (
@@ -41,7 +49,8 @@ export function MyQuarterPanel({
             }}
           >
             Nothing saved yet. Use the bookmark on a card, or{" "}
-            <span style={{ fontWeight: 600 }}>Add to My Quarter</span> inside a strategy.
+            <span style={{ fontWeight: 600 }}>Add to My Quarter</span> inside a
+            strategy.
           </p>
         ) : (
           <ul className="mt-2 flex flex-col">
@@ -49,16 +58,24 @@ export function MyQuarterPanel({
               <li
                 key={s.id}
                 className="flex items-start justify-between gap-2 py-2.5"
-                style={{ borderTop: i > 0 ? `1px solid ${UW.lineSoft}` : "none" }}
+                style={{
+                  borderTop: i > 0 ? `1px solid ${UW.lineSoft}` : "none",
+                }}
               >
-                <button onClick={() => onOpen(s.id)} className="min-w-0 flex-1 text-left">
+                <button
+                  onClick={() => onOpen(s.id)}
+                  className="min-w-0 flex-1 text-left"
+                >
                   <p
                     className="font-semibold leading-snug hover:underline"
                     style={{ fontSize: 12.5, color: UW.purple }}
                   >
                     {s.title}
                   </p>
-                  <p className="mt-0.5" style={{ fontSize: 10.5, color: UW.inkSubtle }}>
+                  <p
+                    className="mt-0.5"
+                    style={{ fontSize: 10.5, color: UW.inkSubtle }}
+                  >
                     {s.tags[0]} · {shortProgram(s.program)}
                   </p>
                 </button>
@@ -67,8 +84,12 @@ export function MyQuarterPanel({
                   aria-label={`Remove ${s.title} from My Quarter`}
                   className="mt-0.5 flex-shrink-0"
                   style={{ color: UW.inkSubtle }}
-                  onMouseEnter={e => (e.currentTarget.style.color = UW.purple)}
-                  onMouseLeave={e => (e.currentTarget.style.color = UW.inkSubtle)}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.color = UW.purple)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.color = UW.inkSubtle)
+                  }
                 >
                   <X size={13} />
                 </button>
@@ -95,15 +116,18 @@ export function RankingPanel({
   pool: Strategy[];
 }) {
   const top = rankAll(basis, pool).slice(0, 5);
-  const meta = RANK_BASES.find(b => b.id === basis)!;
+  const meta = RANK_BASES.find((b) => b.id === basis)!;
 
   return (
     <Panel>
-      <PanelHeader icon={<Trophy size={13} style={{ color: UW.gold }} />} title="Top strategies" />
+      <PanelHeader
+        icon={<Trophy size={13} style={{ color: UW.gold }} />}
+        title="Top strategies"
+      />
 
       <div className="p-4">
         <div className="mb-3 flex">
-          {RANK_BASES.map(b => (
+          {RANK_BASES.map((b) => (
             <button
               key={b.id}
               onClick={() => onBasis(b.id)}
@@ -132,9 +156,9 @@ export function RankingPanel({
               style={{ borderTop: i > 0 ? `1px solid ${UW.lineSoft}` : "none" }}
             >
               <span
-                className="flex h-[22px] w-[22px] flex-shrink-0 items-center justify-center font-bold"
+                className="flex h-[20px] w-[20px] flex-shrink-0 items-center justify-center font-bold"
                 style={{
-                  fontSize: 11,
+                  fontSize: 10.5,
                   fontFamily: FONT_SERIF,
                   backgroundColor: rank <= 3 ? UW.purple : UW.purpleTint,
                   color: rank <= 3 ? UW.white : UW.purple,
@@ -142,39 +166,33 @@ export function RankingPanel({
               >
                 {rank}
               </span>
-              <button onClick={() => onOpen(strategy.id)} className="min-w-0 flex-1 text-left">
+              <button
+                onClick={() => onOpen(strategy.id)}
+                className="min-w-0 flex-1 text-left"
+              >
                 <p
                   className="font-semibold leading-snug hover:underline"
                   style={{ fontSize: 12, color: UW.purple }}
                 >
                   {strategy.title}
                 </p>
-                <p className="mt-0.5" style={{ fontSize: 10.5, color: UW.inkSubtle }}>
-                  {rankValue(strategy, basis)} {meta.unit} ·{" "}
-                  {keptPercent(strategy)}% still using it
-                </p>
               </button>
+              <span
+                className="flex-shrink-0"
+                style={{ fontSize: 10.5, fontWeight: 600, color: UW.inkSubtle }}
+              >
+                {rankValue(strategy, basis)}
+              </span>
             </li>
           ))}
         </ol>
 
-        <p
-          className="mt-3 pt-3"
-          style={{
-            fontSize: 10.5,
-            lineHeight: "16px",
-            color: UW.inkSubtle,
-            borderTop: `1px solid ${UW.lineSoft}`,
-          }}
-        >
-          {meta.explain}
-        </p>
         <button
           onClick={onSeeAll}
           className="mt-2 font-semibold hover:underline"
           style={{ fontSize: 11.5, color: UW.purple }}
         >
-          See the full ranking table →
+          See the full ranking →
         </button>
       </div>
     </Panel>
@@ -194,24 +212,29 @@ export function SupportPanel() {
             When a strategy is not enough
           </h2>
         </div>
-        <p className="mt-2" style={{ fontSize: 12, lineHeight: "18px", color: UW.inkMid }}>
-          If a course has become unmanageable, speak with your graduate program adviser
-          before a deadline passes. Extensions and incompletes are ordinary, and asking
-          early gives more options than asking late.
+        <p
+          className="mt-2"
+          style={{ fontSize: 12, lineHeight: "18px", color: UW.inkMid }}
+        >
+          If a course has become unmanageable, speak with your graduate program
+          adviser before a deadline passes. Extensions and incompletes are
+          ordinary, and asking early gives more options than asking late.
         </p>
         <div className="mt-2.5 flex flex-col gap-1.5">
-          {["Graduate program adviser", "International Student Services", "Counseling Center"].map(
-            l => (
-              <a
-                key={l}
-                href="#"
-                className="hover:underline"
-                style={{ fontSize: 12, fontWeight: 600, color: UW.purple }}
-              >
-                {l} →
-              </a>
-            ),
-          )}
+          {[
+            "Graduate program adviser",
+            "International Student Services",
+            "Counseling Center",
+          ].map((l) => (
+            <a
+              key={l}
+              href="#"
+              className="hover:underline"
+              style={{ fontSize: 12, fontWeight: 600, color: UW.purple }}
+            >
+              {l} →
+            </a>
+          ))}
         </div>
       </div>
     </Panel>
@@ -245,7 +268,11 @@ export function HowItWorksPanel() {
             >
               <span
                 className="mt-px flex h-[17px] w-[17px] flex-shrink-0 items-center justify-center font-bold"
-                style={{ fontSize: 9.5, backgroundColor: UW.purpleTintDeep, color: UW.purple }}
+                style={{
+                  fontSize: 9.5,
+                  backgroundColor: UW.purpleTintDeep,
+                  color: UW.purple,
+                }}
               >
                 {i + 1}
               </span>
