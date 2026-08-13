@@ -1,55 +1,52 @@
 import { useMemo, useState } from "react";
-import { LayoutGrid, ListOrdered, Info } from "lucide-react";
+import { X, Bookmark } from "lucide-react";
 import {
   ALL_PROGRAMS,
-  SORTS,
   STRATEGIES,
-  boardStats,
   countsByChallenge,
   filterStrategies,
   seedCommentsFor,
   shortChallenge,
+  shortProgram,
   suggestionsFor,
   type Comment,
   type CommentKind,
   type RankBasis,
-  type SortId,
   type Strategy,
 } from "./data";
-import { UW, FONT_SANS } from "./uw";
+import { UW, R, TYPE, FONT_SANS } from "./uw";
 import { StrategyCard } from "./components/StrategyCard";
-import { StrategyModal, type CurrentUser } from "./components/StrategyModal";
+import {
+  DiscussionPanel,
+  type CurrentUser,
+} from "./components/DiscussionPanel";
 import { FilterBar } from "./components/FilterBar";
-import { RankingTable } from "./components/RankingTable";
+import { TopStrategiesPage } from "./components/TopStrategiesPage";
 import { AboutPage } from "./components/AboutPage";
 import { Masthead, Footer, type View } from "./components/SiteChrome";
-import { MyQuarterPanel, RankingPanel } from "./components/Sidebar";
 import { ShareModal } from "./components/ShareModal";
 
-// The signed-in student. Comments and contributions are attributed to this
-// person unless they choose to post anonymously.
 const USER: CurrentUser = {
   name: "You",
   program: "Human Centered Design & Engineering (MS)",
   year: "Year 1",
 };
 
-/** Cards shown before the board is filtered, so the first screen is choosable. */
+/** Shown before anything is filtered, so the first screen stays choosable. */
 const PREVIEW_COUNT = 6;
 
 export default function App() {
   const [view, setView] = useState<View>("board");
-  const [layout, setLayout] = useState<"cards" | "table">("cards");
 
   const [challenge, setChallenge] = useState<string | null>(null);
   const [program, setProgram] = useState<string>(ALL_PROGRAMS);
   const [courseType, setCourseType] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortId>("liked");
   const [rankBasis, setRankBasis] = useState<RankBasis>("liked");
   const [showAll, setShowAll] = useState(false);
 
   const [strategies, setStrategies] = useState<Strategy[]>(STRATEGIES);
+  const [flipped, setFlipped] = useState<Set<number>>(new Set());
   const [saved, setSaved] = useState<number[]>([]);
   const [liked, setLiked] = useState<Set<number>>(new Set());
   const [thanked, setThanked] = useState<Set<number>>(new Set());
@@ -58,7 +55,7 @@ export default function App() {
     Object.fromEntries(STRATEGIES.map((s) => [s.id, seedCommentsFor(s.id)])),
   );
 
-  const [openId, setOpenId] = useState<number | null>(null);
+  const [discussId, setDiscussId] = useState<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
 
   const filtersActive =
@@ -70,27 +67,24 @@ export default function App() {
   const results = useMemo(
     () =>
       filterStrategies(
-        { challenge, program, courseType, query, sort },
+        { challenge, program, courseType, query, sort: "saved" },
         strategies,
       ),
-    [challenge, program, courseType, query, sort, strategies],
+    [challenge, program, courseType, query, strategies],
   );
 
-  // How many strategies each program would show under the filters already set,
-  // so the program list can say "Law (JD) 0" before you pick it.
   const programCounts = useMemo(() => {
     const pool = filterStrategies(
-      { challenge, program: ALL_PROGRAMS, courseType, query, sort },
+      { challenge, program: ALL_PROGRAMS, courseType, query, sort: "saved" },
       strategies,
     );
-    const out: Record<string, number> = {};
-    for (const s of pool) out[s.program] = (out[s.program] ?? 0) + 1;
-    return { counts: out, total: pool.length };
-  }, [challenge, courseType, query, sort, strategies]);
+    const counts: Record<string, number> = {};
+    for (const s of pool) counts[s.program] = (counts[s.program] ?? 0) + 1;
+    return { counts, total: pool.length };
+  }, [challenge, courseType, query, strategies]);
 
   const visible =
     filtersActive || showAll ? results : results.slice(0, PREVIEW_COUNT);
-  const stats = useMemo(() => boardStats(strategies), [strategies]);
   const counts = useMemo(() => countsByChallenge(strategies), [strategies]);
 
   const commentCounts = useMemo(() => {
@@ -101,19 +95,24 @@ export default function App() {
     return out;
   }, [threads]);
 
-  const open =
-    openId === null ? null : (strategies.find((s) => s.id === openId) ?? null);
+  const discussing =
+    discussId === null
+      ? null
+      : (strategies.find((s) => s.id === discussId) ?? null);
 
-  /** Applies the viewer's own comment likes on top of the stored counts. */
-  const openThread = useMemo(() => {
-    if (!open) return [];
-    const bump = (n: number, id: string) => n + (likedComments.has(id) ? 1 : 0);
-    return (threads[open.id] ?? []).map((c) => ({
+  const discussThread = useMemo(() => {
+    if (!discussing) return [];
+    const add = (n: number, id: string) => n + (likedComments.has(id) ? 1 : 0);
+    return (threads[discussing.id] ?? []).map((c) => ({
       ...c,
-      likes: bump(c.likes, c.id),
-      replies: c.replies.map((r) => ({ ...r, likes: bump(r.likes, r.id) })),
+      likes: add(c.likes, c.id),
+      replies: c.replies.map((r) => ({ ...r, likes: add(r.likes, r.id) })),
     }));
-  }, [open, threads, likedComments]);
+  }, [discussing, threads, likedComments]);
+
+  const savedStrategies = saved
+    .map((id) => strategies.find((s) => s.id === id))
+    .filter((s): s is Strategy => Boolean(s));
 
   function toggle<T>(set: Set<T>, value: T) {
     const next = new Set(set);
@@ -121,14 +120,7 @@ export default function App() {
     return next;
   }
 
-  function clearFilters() {
-    setChallenge(null);
-    setProgram(ALL_PROGRAMS);
-    setCourseType(null);
-    setQuery("");
-  }
-
-  /** Adjusts a counter on one strategy so every view of it agrees. */
+  /** Keeps a counter consistent everywhere it is shown. */
   function bump(id: number, field: "likes" | "saves", delta: number) {
     setStrategies((prev) =>
       prev.map((s) => (s.id === id ? { ...s, [field]: s[field] + delta } : s)),
@@ -149,21 +141,27 @@ export default function App() {
     bump(id, "likes", isLiked ? -1 : 1);
   }
 
+  /** Used by the ranking page, My Quarter and a fresh submission. */
+  function openStrategy(id: number) {
+    setView("board");
+    setShowAll(true);
+    setFlipped((prev) => new Set(prev).add(id));
+    requestAnimationFrame(() =>
+      document
+        .getElementById(`strategy-${id}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" }),
+    );
+  }
+
   function postComment(
     strategyId: number,
-    input: {
-      kind: CommentKind;
-      body: string;
-      outcome?: Comment["outcome"];
-      anonymous: boolean;
-    },
+    input: { kind: CommentKind; body: string; anonymous: boolean },
   ) {
     const entry: Comment = {
       id: `own-${Date.now()}`,
       kind: input.kind,
-      outcome: input.outcome,
       author: input.anonymous ? null : USER.name,
-      program: USER.program.replace(/\s*\([^)]*\)\s*$/, ""),
+      program: shortProgram(USER.program),
       year: USER.year,
       when: "Just now",
       body: input.body,
@@ -194,7 +192,7 @@ export default function App() {
                 {
                   id: `own-${Date.now()}`,
                   author: anonymous ? null : USER.name,
-                  program: USER.program.replace(/\s*\([^)]*\)\s*$/, ""),
+                  program: shortProgram(USER.program),
                   year: USER.year,
                   when: "Just now",
                   body,
@@ -206,16 +204,11 @@ export default function App() {
     }));
   }
 
-  function addStrategy(s: Strategy) {
-    setStrategies((prev) => [s, ...prev]);
-    setThreads((prev) => ({ ...prev, [s.id]: [] }));
-  }
-
   return (
     <div
       className="min-h-screen"
       style={{
-        backgroundColor: UW.white,
+        backgroundColor: UW.paper,
         fontFamily: FONT_SANS,
         color: UW.ink,
       }}
@@ -227,273 +220,126 @@ export default function App() {
         onShare={() => setShareOpen(true)}
       />
 
-      {view === "about" ? (
+      {view === "about" && (
         <AboutPage
           onBack={() => setView("board")}
           onShare={() => setShareOpen(true)}
         />
-      ) : (
-        <>
-          {/* Compact introduction */}
-          <div
-            style={{
-              backgroundColor: UW.band,
-              borderBottom: `1px solid ${UW.line}`,
-            }}
-          >
-            <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-x-8 gap-y-2 px-6 py-3">
-              <p
-                style={{
-                  fontSize: 13.5,
-                  lineHeight: "20px",
-                  color: UW.inkMid,
-                  maxWidth: 680,
-                }}
-              >
-                Practical strategies for UW course systems, written by graduate
-                students who have already worked them out.{" "}
-                <button
-                  onClick={() => setView("about")}
-                  className="font-semibold hover:underline"
-                  style={{ color: UW.purple }}
-                >
-                  How this works
-                </button>
-              </p>
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-[1600px] px-6 py-6">
-            <div className="grid items-start gap-7 lg:grid-cols-[minmax(0,1fr)_320px]">
-              <main className="min-w-0">
-                <FilterBar
-                  challenge={challenge}
-                  program={program}
-                  courseType={courseType}
-                  counts={counts}
-                  query={query}
-                  onQuery={setQuery}
-                  programCounts={programCounts.counts}
-                  programTotal={programCounts.total}
-                  onChallenge={(c) => {
-                    setChallenge(c);
-                    setShowAll(false);
-                  }}
-                  onProgram={setProgram}
-                  onCourseType={setCourseType}
-                  onClear={clearFilters}
-                  anyActive={filtersActive}
-                />
-
-                {/* Results toolbar */}
-                <div
-                  className="mt-5 flex flex-wrap items-center justify-between gap-3 pb-2.5"
-                  style={{ borderBottom: `2px solid ${UW.purple}` }}
-                >
-                  <p style={{ fontSize: 13, color: UW.inkMid }}>
-                    <span style={{ fontWeight: 700, color: UW.purple }}>
-                      {results.length}
-                    </span>{" "}
-                    {results.length === 1 ? "strategy" : "strategies"}
-                    {challenge && (
-                      <>
-                        {" "}
-                        for <strong>{shortChallenge(challenge)}</strong>
-                      </>
-                    )}
-                    {program !== ALL_PROGRAMS && (
-                      <>
-                        {" "}
-                        in <strong>{program}</strong>
-                      </>
-                    )}
-                    {query.trim() && (
-                      <>
-                        {" "}
-                        matching <strong>“{query.trim()}”</strong>
-                      </>
-                    )}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    <select
-                      value={sort}
-                      onChange={(e) => setSort(e.target.value as SortId)}
-                      aria-label="Sort strategies"
-                      style={{
-                        fontSize: 12.5,
-                        padding: "6px 8px",
-                        border: `1px solid ${UW.line}`,
-                        backgroundColor: UW.white,
-                        color: UW.ink,
-                        fontFamily: FONT_SANS,
-                        outline: "none",
-                      }}
-                    >
-                      {SORTS.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.label}
-                        </option>
-                      ))}
-                    </select>
-
-                    <div className="flex">
-                      {(
-                        [
-                          [
-                            "cards",
-                            <LayoutGrid key="g" size={13} />,
-                            "Card view",
-                          ],
-                          [
-                            "table",
-                            <ListOrdered key="l" size={13} />,
-                            "Ranking table",
-                          ],
-                        ] as Array<["cards" | "table", React.ReactNode, string]>
-                      ).map(([id, icon, label]) => (
-                        <button
-                          key={id}
-                          onClick={() => setLayout(id)}
-                          aria-label={label}
-                          aria-pressed={layout === id}
-                          className="flex items-center justify-center"
-                          style={{
-                            padding: "7px 10px",
-                            marginLeft: -1,
-                            backgroundColor:
-                              layout === id ? UW.purple : UW.white,
-                            color: layout === id ? UW.white : UW.inkMuted,
-                            border: `1px solid ${layout === id ? UW.purple : UW.line}`,
-                          }}
-                        >
-                          {icon}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Results */}
-                {results.length === 0 ? (
-                  <EmptyState
-                    query={query}
-                    suggestions={suggestionsFor(strategies, query)}
-                    onClear={clearFilters}
-                    onOpen={setOpenId}
-                  />
-                ) : layout === "table" ? (
-                  <div className="mt-5">
-                    <RankingTable
-                      pool={results}
-                      basis={rankBasis}
-                      onBasis={setRankBasis}
-                      savedIds={saved}
-                      likedIds={[...liked]}
-                      commentCounts={commentCounts}
-                      onOpen={setOpenId}
-                    />
-                  </div>
-                ) : (
-                  <>
-                    <div className="mt-5 grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                      {visible.map((s) => (
-                        <StrategyCard
-                          key={s.id}
-                          strategy={s}
-                          saved={saved.includes(s.id)}
-                          liked={liked.has(s.id)}
-                          commentCount={commentCounts[s.id] ?? 0}
-                          onOpen={() => setOpenId(s.id)}
-                          onToggleSave={() => toggleSave(s.id)}
-                          onToggleLike={() => toggleLike(s.id)}
-                        />
-                      ))}
-                    </div>
-
-                    {!filtersActive &&
-                      !showAll &&
-                      results.length > PREVIEW_COUNT && (
-                        <div
-                          className="mt-5 flex flex-wrap items-center justify-between gap-3 p-4"
-                          style={{
-                            backgroundColor: UW.band,
-                            border: `1px solid ${UW.line}`,
-                          }}
-                        >
-                          <p
-                            className="flex items-center gap-2"
-                            style={{ fontSize: 13, color: UW.inkMid }}
-                          >
-                            <Info size={14} style={{ color: UW.purple }} />
-                            Showing {PREVIEW_COUNT} of {results.length}. Search,
-                            or pick a common problem, to narrow the board.
-                          </p>
-                          <button
-                            onClick={() => setShowAll(true)}
-                            className="font-semibold"
-                            style={{
-                              fontSize: 12.5,
-                              padding: "8px 16px",
-                              color: UW.purple,
-                              border: `1px solid ${UW.purple}`,
-                            }}
-                          >
-                            Show all {results.length} strategies
-                          </button>
-                        </div>
-                      )}
-                  </>
-                )}
-              </main>
-
-              <aside className="flex flex-col gap-4 lg:sticky lg:top-5">
-                <MyQuarterPanel
-                  saved={saved
-                    .map((id) => strategies.find((s) => s.id === id))
-                    .filter((s): s is Strategy => Boolean(s))}
-                  total={stats.strategies}
-                  onRemove={toggleSave}
-                  onOpen={setOpenId}
-                />
-                <RankingPanel
-                  pool={strategies}
-                  basis={rankBasis}
-                  onBasis={setRankBasis}
-                  onOpen={setOpenId}
-                  onSeeAll={() => {
-                    setLayout("table");
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                />
-              </aside>
-            </div>
-          </div>
-        </>
       )}
 
-      <Footer
-        onShare={() => setShareOpen(true)}
-        onAbout={() => setView("about")}
-      />
-
-      {open && (
-        <StrategyModal
-          strategy={open}
-          comments={openThread}
-          saved={saved.includes(open.id)}
-          liked={liked.has(open.id)}
-          thanked={thanked.has(open.id)}
-          rankBasis={rankBasis}
+      {view === "top" && (
+        <TopStrategiesPage
           pool={strategies}
+          basis={rankBasis}
+          savedIds={saved}
+          likedIds={[...liked]}
+          onBasis={setRankBasis}
+          onOpen={openStrategy}
+        />
+      )}
+
+      {view === "board" && (
+        <main className="mx-auto max-w-[1120px] px-6 py-8">
+          <FilterBar
+            challenge={challenge}
+            program={program}
+            courseType={courseType}
+            query={query}
+            counts={counts}
+            programCounts={programCounts.counts}
+            programTotal={programCounts.total}
+            onChallenge={(c) => {
+              setChallenge(c);
+              setShowAll(false);
+              setFlipped(new Set());
+            }}
+            onProgram={setProgram}
+            onCourseType={setCourseType}
+            onQuery={setQuery}
+          />
+
+          <p className="mt-8" style={{ ...TYPE.meta, color: UW.inkSubtle }}>
+            {results.length} {results.length === 1 ? "strategy" : "strategies"}
+            {challenge && ` for ${shortChallenge(challenge)}`}
+            {program !== ALL_PROGRAMS && ` in ${shortProgram(program)}`}
+            {query.trim() && ` matching “${query.trim()}”`}
+          </p>
+
+          {results.length === 0 ? (
+            <EmptyState
+              query={query}
+              suggestions={suggestionsFor(strategies, query)}
+              onOpen={openStrategy}
+            />
+          ) : (
+            <>
+              <div className="mt-4 grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {visible.map((s) => (
+                  <div key={s.id} id={`strategy-${s.id}`} className="h-full">
+                    <StrategyCard
+                      strategy={s}
+                      flipped={flipped.has(s.id)}
+                      saved={saved.includes(s.id)}
+                      liked={liked.has(s.id)}
+                      thanked={thanked.has(s.id)}
+                      commentCount={commentCounts[s.id] ?? 0}
+                      onFlip={() => setFlipped((prev) => toggle(prev, s.id))}
+                      onToggleSave={() => toggleSave(s.id)}
+                      onToggleLike={() => toggleLike(s.id)}
+                      onThank={() =>
+                        setThanked((prev) => new Set(prev).add(s.id))
+                      }
+                      onDiscuss={() => setDiscussId(s.id)}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              {!filtersActive && !showAll && results.length > PREVIEW_COUNT && (
+                <button
+                  onClick={() => setShowAll(true)}
+                  className="mx-auto mt-6 block transition-colors"
+                  style={{
+                    ...TYPE.chip,
+                    fontWeight: 600,
+                    padding: "11px 22px",
+                    borderRadius: R.control,
+                    color: UW.inkMid,
+                    backgroundColor: UW.card,
+                    border: `1px solid ${UW.line}`,
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = UW.band)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = UW.card)
+                  }
+                >
+                  Show all {results.length} strategies
+                </button>
+              )}
+            </>
+          )}
+
+          <MyQuarter
+            saved={savedStrategies}
+            onRemove={toggleSave}
+            onOpen={openStrategy}
+          />
+        </main>
+      )}
+
+      <Footer onAbout={() => setView("about")} />
+
+      {discussing && (
+        <DiscussionPanel
+          strategy={discussing}
+          comments={discussThread}
           user={USER}
-          onClose={() => setOpenId(null)}
-          onToggleSave={() => toggleSave(open.id)}
-          onToggleLike={() => toggleLike(open.id)}
-          onThank={() => setThanked((prev) => new Set(prev).add(open.id))}
-          onPost={(input) => postComment(open.id, input)}
+          onClose={() => setDiscussId(null)}
+          onPost={(input) => postComment(discussing.id, input)}
           onReply={(commentId, body, anonymous) =>
-            postReply(open.id, commentId, body, anonymous)
+            postReply(discussing.id, commentId, body, anonymous)
           }
           onLikeComment={(id) => setLikedComments((prev) => toggle(prev, id))}
         />
@@ -503,8 +349,11 @@ export default function App() {
         <ShareModal
           nextId={Math.max(...strategies.map((s) => s.id)) + 1}
           onClose={() => setShareOpen(false)}
-          onSubmit={addStrategy}
-          onOpenSubmission={setOpenId}
+          onSubmit={(s) => {
+            setStrategies((prev) => [s, ...prev]);
+            setThreads((prev) => ({ ...prev, [s.id]: [] }));
+          }}
+          onOpenSubmission={openStrategy}
         />
       )}
     </div>
@@ -513,44 +362,118 @@ export default function App() {
 
 // ── Pieces ────────────────────────────────────────────────────────────────────
 
+function MyQuarter({
+  saved,
+  onRemove,
+  onOpen,
+}: {
+  saved: Strategy[];
+  onRemove: (id: number) => void;
+  onOpen: (id: number) => void;
+}) {
+  return (
+    <section className="mt-12">
+      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <h2
+          className="flex items-center gap-2"
+          style={{ ...TYPE.sectionQuestion, color: UW.ink }}
+        >
+          <Bookmark size={17} style={{ color: UW.goldInk }} />
+          My Quarter
+        </h2>
+        <p style={{ ...TYPE.meta, color: UW.inkSubtle }}>
+          Strategies you want to try this quarter.
+        </p>
+      </div>
+
+      {saved.length === 0 ? (
+        <p
+          className="mt-3 px-5 py-6"
+          style={{
+            ...TYPE.body,
+            color: UW.inkSubtle,
+            backgroundColor: UW.card,
+            border: `1px dashed ${UW.line}`,
+            borderRadius: R.card,
+          }}
+        >
+          Nothing saved yet. Use the bookmark on any card.
+        </p>
+      ) : (
+        <ul className="mt-3 flex flex-wrap gap-2">
+          {saved.map((s) => (
+            <li
+              key={s.id}
+              className="flex items-center gap-3 py-2.5 pl-4 pr-2.5"
+              style={{
+                backgroundColor: UW.card,
+                border: `1px solid ${UW.goldLine}`,
+                borderRadius: R.card,
+              }}
+            >
+              <button onClick={() => onOpen(s.id)} className="text-left">
+                <span
+                  className="block hover:underline"
+                  style={{ ...TYPE.chip, fontWeight: 600, color: UW.ink }}
+                >
+                  {s.title}
+                </span>
+                <span
+                  className="block"
+                  style={{ ...TYPE.meta, color: UW.inkSubtle }}
+                >
+                  {shortProgram(s.program)}
+                </span>
+              </button>
+              <button
+                onClick={() => onRemove(s.id)}
+                aria-label={`Remove ${s.title}`}
+                style={{ color: UW.inkSubtle }}
+              >
+                <X size={14} />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
 function EmptyState({
   query,
   suggestions,
-  onClear,
   onOpen,
 }: {
   query: string;
   suggestions: Strategy[];
-  onClear: () => void;
   onOpen: (id: number) => void;
 }) {
   return (
     <div
-      className="mt-5 px-6 py-12 text-center"
-      style={{ backgroundColor: UW.band, border: `1px dashed ${UW.line}` }}
+      className="mt-4 px-6 py-10"
+      style={{
+        backgroundColor: UW.card,
+        border: `1px dashed ${UW.line}`,
+        borderRadius: R.card,
+      }}
     >
-      <p style={{ fontSize: 15, fontWeight: 600, color: UW.ink }}>
+      <p style={{ ...TYPE.body, fontWeight: 600, color: UW.ink }}>
         Nothing matches{" "}
         {query.trim() ? `“${query.trim()}”` : "this combination"} yet.
       </p>
-
-      {suggestions.length > 0 ? (
+      {suggestions.length > 0 && (
         <>
-          <p className="mt-1" style={{ fontSize: 13, color: UW.inkMuted }}>
+          <p className="mt-1" style={{ ...TYPE.meta, color: UW.inkSubtle }}>
             The closest strategies on the board:
           </p>
-          <ul className="mx-auto mt-3 flex max-w-md flex-col gap-1.5">
+          <ul className="mt-3 flex flex-col gap-1.5">
             {suggestions.map((s) => (
               <li key={s.id}>
                 <button
                   onClick={() => onOpen(s.id)}
-                  className="w-full px-3 py-2 text-left font-semibold hover:underline"
-                  style={{
-                    fontSize: 13,
-                    color: UW.purple,
-                    backgroundColor: UW.white,
-                    border: `1px solid ${UW.line}`,
-                  }}
+                  className="hover:underline"
+                  style={{ ...TYPE.body, fontWeight: 600, color: UW.purple }}
                 >
                   {s.title}
                 </button>
@@ -558,43 +481,20 @@ function EmptyState({
             ))}
           </ul>
         </>
-      ) : (
-        <p className="mt-1" style={{ fontSize: 13, color: UW.inkMuted }}>
-          Try a different word, or clear the filters and browse by what you need
-          help with.
-        </p>
       )}
-
-      <button
-        onClick={onClear}
-        className="mt-5 font-semibold"
-        style={{
-          padding: "9px 18px",
-          fontSize: 12.5,
-          color: UW.white,
-          backgroundColor: UW.purple,
-        }}
-      >
-        Clear all filters
-      </button>
     </div>
   );
 }
 
-/** Keyframes and one scrollbar rule that Tailwind utilities cannot express. */
 function GlobalStyle() {
   return (
     <style>{`
       @keyframes csbFade { from { opacity: 0 } to { opacity: 1 } }
-      @keyframes csbFlipIn {
-        from { opacity: 0; transform: perspective(1800px) rotateY(-78deg) scale(.9); }
-        60%  { opacity: 1; }
-        to   { opacity: 1; transform: perspective(1800px) rotateY(0deg) scale(1); }
-      }
+      @keyframes csbSlideIn { from { transform: translateX(24px); opacity: .6 } to { transform: none; opacity: 1 } }
       @media (prefers-reduced-motion: reduce) {
-        @keyframes csbFlipIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes csbSlideIn { from { opacity: 0 } to { opacity: 1 } }
       }
-      .csb-rail::-webkit-scrollbar { display: none; }
+      ::selection { background: ${UW.purpleTint}; }
     `}</style>
   );
 }

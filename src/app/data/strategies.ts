@@ -345,7 +345,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 13,
     title: "Download the whole quarter’s readings in Week 1",
-    benefit: "Links break and files disappear more often than you would expect.",
+    benefit:
+      "Links break and files disappear more often than you would expect.",
     tags: ["Readings", "First week"],
     author: "Yuki",
     year: "Year 2",
@@ -391,7 +392,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 15,
     title: "Check Files when Modules looks empty",
-    benefit: "Materials are often uploaded before they are linked into a module.",
+    benefit:
+      "Materials are often uploaded before they are linked into a module.",
     tags: ["Readings", "Canvas"],
     author: "Nadia",
     year: "Year 2",
@@ -439,7 +441,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   // ── Notifications ───────────────────────────────────────────────────────────
   {
     id: 17,
-    title: "Switch everything to a daily summary except grades and announcements",
+    title:
+      "Switch everything to a daily summary except grades and announcements",
     benefit: "Fewer alerts, and the important two still arrive on time.",
     tags: ["Notifications", "Setup"],
     author: "Daniel",
@@ -465,7 +468,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 18,
     title: "Send all Canvas email to one folder",
-    benefit: "Course mail stops burying the messages you actually need to answer.",
+    benefit:
+      "Course mail stops burying the messages you actually need to answer.",
     tags: ["Notifications", "Email"],
     author: "Mei",
     year: "Year 2",
@@ -752,7 +756,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 30,
     title: "Confirm the citation style before the first paper",
-    benefit: "Style expectations differ between departments and even instructors.",
+    benefit:
+      "Style expectations differ between departments and even instructors.",
     tags: ["Expectations", "Writing"],
     author: "Ibrahim",
     year: "Year 2",
@@ -797,7 +802,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   },
   {
     id: 32,
-    title: "Put collection and site visit hours in the same calendar as deadlines",
+    title:
+      "Put collection and site visit hours in the same calendar as deadlines",
     benefit: "Access hours are limited and do not move for your schedule.",
     tags: ["Calendar", "Fieldwork"],
     author: "Clara",
@@ -821,7 +827,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 33,
     title: "Get the production calendar before the syllabus",
-    benefit: "Rehearsal and build calls will decide your quarter, not the readings.",
+    benefit:
+      "Rehearsal and build calls will decide your quarter, not the readings.",
     tags: ["Studio", "Calendar"],
     author: "Marcus",
     year: "Year 1",
@@ -846,7 +853,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 34,
     title: "Ask what “pin-up ready” means in this studio",
-    benefit: "The standard for a review is set by the instructor, not the syllabus.",
+    benefit:
+      "The standard for a review is set by the instructor, not the syllabus.",
     tags: ["Studio", "Expectations"],
     author: "Ngozi",
     year: "Year 1",
@@ -920,7 +928,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 37,
     title: "Read the lab rubric before the lab, not after",
-    benefit: "Most lost marks are for data you did not record while you were there.",
+    benefit:
+      "Most lost marks are for data you did not record while you were there.",
     tags: ["Labs", "Expectations"],
     author: "Sanjay",
     year: "Year 1",
@@ -943,7 +952,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 38,
     title: "Ask your adviser how lab meetings and coursework interact",
-    benefit: "Research hours are assumed, not scheduled, and they will fill the gaps.",
+    benefit:
+      "Research hours are assumed, not scheduled, and they will fill the gaps.",
     tags: ["Research", "Expectations"],
     author: "Farah",
     year: "Year 2",
@@ -991,7 +1001,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 40,
     title: "Download protocols and maps before you lose signal",
-    benefit: "The one document you need is always the one that will not load in the field.",
+    benefit:
+      "The one document you need is always the one that will not load in the field.",
     tags: ["Fieldwork", "Readings"],
     author: "Elin",
     year: "Year 2",
@@ -1064,7 +1075,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 43,
     title: "Build the citation library while you read, not at the end",
-    benefit: "Two hours across the quarter instead of one night before submission.",
+    benefit:
+      "Two hours across the quarter instead of one night before submission.",
     tags: ["Readings", "Writing"],
     author: "Sara",
     year: "Year 1",
@@ -1138,7 +1150,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 46,
     title: "Log clinical hours the same week they happen",
-    benefit: "Reconstructing a log at the deadline is guesswork you will be graded on.",
+    benefit:
+      "Reconstructing a log at the deadline is guesswork you will be graded on.",
     tags: ["Clinical", "Deadlines"],
     author: "Meredith",
     year: "Year 2",
@@ -1164,7 +1177,8 @@ const RAW: Array<Omit<Strategy, "saves">> = [
   {
     id: 47,
     title: "Find where clinical placements are posted, and it is not Canvas",
-    benefit: "Placement changes arrive through a separate system with its own alerts.",
+    benefit:
+      "Placement changes arrive through a separate system with its own alerts.",
     tags: ["Clinical", "Announcements"],
     author: "Beatrice",
     year: "Year 1",
@@ -1290,9 +1304,9 @@ const RAW: Array<Omit<Strategy, "saves">> = [
 // Save counts are seeded rather than authored per card: a strategy people kept
 // using is one more of them bookmarked it first. Derived deterministically so
 // every usability-test participant sees the same numbers.
-export const STRATEGIES: Strategy[] = RAW.map(s => ({
+export const STRATEGIES: Strategy[] = RAW.map((s) => ({
   ...s,
   saves: Math.round(s.stillUsing * 0.38) + ((s.id * 7) % 11),
 }));
 
-export const STRATEGY_BY_ID = new Map(STRATEGIES.map(s => [s.id, s]));
+export const STRATEGY_BY_ID = new Map(STRATEGIES.map((s) => [s.id, s]));

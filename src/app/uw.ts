@@ -1,37 +1,57 @@
-// University of Washington web color palette.
-// Primary: PMS 273 / #39275B. Secondary: PMS 117 gold, black, gray, white.
-// Gold is used for accents and rules only — at small text sizes it is replaced
-// by goldInk, which clears WCAG AA on white.
+// Warm paper, UW purple, one typeface.
+//
+// The board reads as a quiet notebook rather than a dashboard: an off-white
+// page, white cards with soft edges, hairline warm-grey rules, and colour only
+// where something is chosen or actionable.
 
 export const UW = {
   purple: "#39275B",
   purpleDark: "#2B1D46",
-  purpleMid: "#4B3775",
   purpleTint: "#F2EFF6",
-  purpleTintDeep: "#E4DEEE",
-  purpleLine: "#CFC6DF",
+  purpleLine: "#D8D0E4",
 
   gold: "#C79900",
-  goldTint: "#FBF4E0",
-  goldLine: "#E8D08A",
+  goldTint: "#FBF3DF",
+  goldLine: "#E7D49B",
   goldInk: "#7A5C00",
 
-  black: "#000000",
-  ink: "#1C1A22",
-  inkMid: "#3D3A45",
-  inkMuted: "#5F5B69",
-  inkSubtle: "#767281",
+  paper: "#FAF8F5",
+  card: "#FFFFFF",
+  band: "#F4F1EC",
 
-  gray: "#A0A0A0",
-  line: "#DCDAE0",
-  lineSoft: "#E9E7ED",
-  band: "#F5F4F7",
-  bandDeep: "#EDEBF1",
+  line: "#E6E1D9",
+  lineSoft: "#F0ECE5",
+
+  ink: "#22201E",
+  inkMid: "#4A4744",
+  inkMuted: "#6E6A65",
+  inkSubtle: "#96918B",
   white: "#FFFFFF",
 } as const;
 
-export const FONT_SANS =
-  "'Encode Sans', 'Open Sans', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+/** Corner radii. Cards are softer than controls, controls softer than chips. */
+export const R = {
+  card: 14,
+  control: 10,
+  chip: 999,
+} as const;
 
-export const FONT_SERIF =
-  "'Adobe Garamond Pro', Garamond, Georgia, 'Times New Roman', serif";
+export const FONT_SANS = "'Noto Sans', system-ui, -apple-system, sans-serif";
+
+/** The board's type scale, applied as-is rather than improvised per component. */
+export const TYPE = {
+  boardTitle: { fontSize: 32, fontWeight: 700, lineHeight: "40px" },
+  boardDescription: { fontSize: 16, fontWeight: 400, lineHeight: "24px" },
+  sectionQuestion: { fontSize: 20, fontWeight: 600, lineHeight: "28px" },
+  chip: { fontSize: 14, fontWeight: 500, lineHeight: "20px" },
+  strategyTitle: { fontSize: 18, fontWeight: 700, lineHeight: "24px" },
+  body: { fontSize: 14, fontWeight: 400, lineHeight: "21px" },
+  meta: { fontSize: 12, fontWeight: 500, lineHeight: "18px" },
+  label: {
+    fontSize: 11,
+    fontWeight: 600,
+    lineHeight: "16px",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase" as const,
+  },
+} as const;

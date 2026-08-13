@@ -31,16 +31,16 @@ export function ProgramPicker({
   // rendered rows can never disagree.
   const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return PROGRAM_GROUPS.map(g => ({
+    return PROGRAM_GROUPS.map((g) => ({
       ...g,
       programs: g.programs.filter(
-        p =>
+        (p) =>
           !q ||
           p.toLowerCase().includes(q) ||
           g.school.toLowerCase().includes(q) ||
           g.short.toLowerCase().includes(q),
       ),
-    })).filter(g => g.programs.length > 0);
+    })).filter((g) => g.programs.length > 0);
   }, [query]);
 
   const flat = useMemo(
@@ -48,7 +48,7 @@ export function ProgramPicker({
       ...(ALL_PROGRAMS.toLowerCase().includes(query.trim().toLowerCase())
         ? [ALL_PROGRAMS]
         : []),
-      ...groups.flatMap(g => g.programs),
+      ...groups.flatMap((g) => g.programs),
     ],
     [groups, query],
   );
@@ -98,7 +98,7 @@ export function ProgramPicker({
   return (
     <div ref={root} className="relative">
       <button
-        onClick={() => setOpen(o => !o)}
+        onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
         className="flex items-center gap-2 transition-colors"
@@ -118,11 +118,11 @@ export function ProgramPicker({
             role="button"
             tabIndex={0}
             aria-label="Clear program filter"
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               onChange(ALL_PROGRAMS);
             }}
-            onKeyDown={e => {
+            onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.stopPropagation();
                 onChange(ALL_PROGRAMS);
@@ -135,7 +135,10 @@ export function ProgramPicker({
         )}
         <ChevronDown
           size={13}
-          style={{ transition: "transform 150ms", transform: open ? "rotate(180deg)" : "none" }}
+          style={{
+            transition: "transform 150ms",
+            transform: open ? "rotate(180deg)" : "none",
+          }}
         />
       </button>
 
@@ -159,7 +162,7 @@ export function ProgramPicker({
             <input
               autoFocus
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Search programs or schools"
               aria-label="Search programs"
@@ -187,7 +190,10 @@ export function ProgramPicker({
             style={{ maxHeight: 320 }}
           >
             {flat.length === 0 ? (
-              <p className="px-3 py-6 text-center" style={{ fontSize: 12.5, color: UW.inkSubtle }}>
+              <p
+                className="px-3 py-6 text-center"
+                style={{ fontSize: 12.5, color: UW.inkSubtle }}
+              >
                 No program matches “{query}”.
               </p>
             ) : (
@@ -204,7 +210,7 @@ export function ProgramPicker({
                     emphasis
                   />
                 )}
-                {groups.map(g => (
+                {groups.map((g) => (
                   <div key={g.school}>
                     <p
                       className="sticky top-0 px-3 py-1.5 font-bold uppercase"
@@ -219,7 +225,7 @@ export function ProgramPicker({
                     >
                       {g.school}
                     </p>
-                    {g.programs.map(p => {
+                    {g.programs.map((p) => {
                       const index = flat.indexOf(p);
                       return (
                         <Row
@@ -249,9 +255,9 @@ export function ProgramPicker({
               backgroundColor: UW.band,
             }}
           >
-            {PROGRAM_GROUPS.flatMap(g => g.programs).length} programs across{" "}
-            {PROGRAM_GROUPS.length} schools and colleges. Counts follow the filters you
-            have already set.
+            {PROGRAM_GROUPS.flatMap((g) => g.programs).length} programs across{" "}
+            {PROGRAM_GROUPS.length} schools and colleges. Counts follow the
+            filters you have already set.
           </p>
         </div>
       )}

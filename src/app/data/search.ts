@@ -9,13 +9,42 @@ import { shortProgram } from "./strategies";
 // scores each token per field instead, and every token has to match somewhere.
 
 const STOP_WORDS = new Set([
-  "a", "an", "the", "to", "of", "in", "on", "for", "and", "or", "is", "are",
-  "i", "my", "me", "it", "how", "do", "does", "can", "with", "at", "be",
+  "a",
+  "an",
+  "the",
+  "to",
+  "of",
+  "in",
+  "on",
+  "for",
+  "and",
+  "or",
+  "is",
+  "are",
+  "i",
+  "my",
+  "me",
+  "it",
+  "how",
+  "do",
+  "does",
+  "can",
+  "with",
+  "at",
+  "be",
 ]);
 
 /** Words students actually type, mapped to words the cards actually use. */
 const SYNONYMS: Record<string, string[]> = {
-  deadline: ["due", "date", "dates", "duedate", "late", "overdue", "submission"],
+  deadline: [
+    "due",
+    "date",
+    "dates",
+    "duedate",
+    "late",
+    "overdue",
+    "submission",
+  ],
   due: ["deadline", "deadlines", "date"],
   assignment: ["homework", "hw", "coursework", "submission", "assignments"],
   homework: ["assignment", "problem", "set"],
@@ -25,7 +54,15 @@ const SYNONYMS: Record<string, string[]> = {
   announcement: ["announcements", "update", "updates", "news", "posted"],
   notification: ["notifications", "alert", "alerts", "notify", "email"],
   email: ["inbox", "mail", "notification"],
-  reading: ["readings", "article", "articles", "paper", "papers", "pdf", "text"],
+  reading: [
+    "readings",
+    "article",
+    "articles",
+    "paper",
+    "papers",
+    "pdf",
+    "text",
+  ],
   calendar: ["schedule", "planner", "ical", "google", "apple", "timetable"],
   group: ["team", "teammate", "teammates", "groupwork", "partner"],
   team: ["group", "groupwork"],
@@ -122,7 +159,7 @@ function indexOf(s: Strategy): FieldIndex {
 function expand(token: string): Array<{ word: string; factor: number }> {
   const out = [{ word: token, factor: 1 }];
   const related = SYNONYMS[token];
-  if (related) out.push(...related.map(word => ({ word, factor: 0.6 })));
+  if (related) out.push(...related.map((word) => ({ word, factor: 0.6 })));
   for (const [key, values] of Object.entries(SYNONYMS)) {
     if (values.includes(token) && key !== token) {
       out.push({ word: key, factor: 0.6 });
@@ -144,9 +181,9 @@ export function searchStrategies(
   strategies: Strategy[],
   rawQuery: string,
 ): SearchHit[] {
-  const tokens = tokenize(rawQuery).filter(t => !STOP_WORDS.has(t));
+  const tokens = tokenize(rawQuery).filter((t) => !STOP_WORDS.has(t));
   if (tokens.length === 0) {
-    return strategies.map(strategy => ({ strategy, score: 0 }));
+    return strategies.map((strategy) => ({ strategy, score: 0 }));
   }
 
   const hits: SearchHit[] = [];
@@ -191,11 +228,11 @@ export function suggestionsFor(
   strategies: Strategy[],
   rawQuery: string,
 ): Strategy[] {
-  const tokens = tokenize(rawQuery).filter(t => !STOP_WORDS.has(t));
+  const tokens = tokenize(rawQuery).filter((t) => !STOP_WORDS.has(t));
   if (tokens.length === 0) return [];
 
   const scored = strategies
-    .map(strategy => {
+    .map((strategy) => {
       const index = indexOf(strategy);
       let best = 0;
       for (const token of tokens) {
@@ -212,9 +249,9 @@ export function suggestionsFor(
       }
       return { strategy, best };
     })
-    .filter(x => x.best > 0)
+    .filter((x) => x.best > 0)
     .sort((a, b) => b.best - a.best)
     .slice(0, 3);
 
-  return scored.map(x => x.strategy);
+  return scored.map((x) => x.strategy);
 }

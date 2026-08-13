@@ -116,11 +116,11 @@ export const PROGRAM_GROUPS: ProgramGroup[] = [
 
 export const ALL_PROGRAMS = "All programs";
 
-export const PROGRAMS: string[] = PROGRAM_GROUPS.flatMap(g => g.programs);
+export const PROGRAMS: string[] = PROGRAM_GROUPS.flatMap((g) => g.programs);
 
 export function schoolOf(program: string): string {
   return (
-    PROGRAM_GROUPS.find(g => g.programs.includes(program))?.short ?? "Other"
+    PROGRAM_GROUPS.find((g) => g.programs.includes(program))?.short ?? "Other"
   );
 }
 

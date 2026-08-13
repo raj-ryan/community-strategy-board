@@ -1,227 +1,319 @@
-import { Heart, MessageSquare, Bookmark, ArrowRight } from "lucide-react";
-import { contributorLine, keptPercent, type Strategy } from "../data";
-import { UW, FONT_SERIF } from "../uw";
+import {
+  Heart,
+  Bookmark,
+  RotateCcw,
+  MessageSquare,
+  ArrowRight,
+  Check,
+} from "lucide-react";
+import { contributorLine, type Strategy } from "../data";
+import { UW, R, TYPE, FONT_SANS } from "../uw";
 
-// The card answers one question only: is this useful for me? Steps, evidence
-// and discussion live in the expanded view, which opens when the card is turned
-// over.
+// One strategy, two sides.
+//
+// The front answers "is this for me?" — title, one sentence, who wrote it.
+// Turning it over gives the only two things needed to act on it: the steps, and
+// when to do them. What used to sit in an expanded view has been removed rather
+// than relocated.
+
+const FACE: React.CSSProperties = {
+  WebkitBackfaceVisibility: "hidden",
+  backfaceVisibility: "hidden",
+};
 
 export function StrategyCard({
   strategy: s,
+  flipped,
   saved,
   liked,
+  thanked,
   commentCount,
-  onOpen,
+  onFlip,
   onToggleSave,
   onToggleLike,
+  onThank,
+  onDiscuss,
 }: {
   strategy: Strategy;
+  flipped: boolean;
   saved: boolean;
   liked: boolean;
+  thanked: boolean;
   commentCount: number;
-  onOpen: () => void;
+  onFlip: () => void;
   onToggleSave: () => void;
   onToggleLike: () => void;
+  onThank: () => void;
+  onDiscuss: () => void;
 }) {
-  const pct = keptPercent(s);
+  // The visible face sits in flow and sets the height; the hidden one is
+  // absolute on top of it, so a longer back grows over the rows below instead
+  // of resizing the whole row.
+  const face = (isBack: boolean): React.CSSProperties => ({
+    ...FACE,
+    ...(flipped === isBack
+      ? { position: "relative" }
+      : { position: "absolute", inset: 0 }),
+    backgroundColor: UW.card,
+    border: `1px solid ${saved && !isBack ? UW.goldLine : UW.line}`,
+    borderRadius: R.card,
+    padding: 20,
+    ...(isBack ? { transform: "rotateY(180deg)" } : null),
+  });
 
   return (
-    <article
-      className="flex h-full flex-col bg-white transition-shadow hover:shadow-[0_2px_14px_rgba(28,26,34,0.10)]"
-      style={{
-        border: `1px solid ${UW.line}`,
-        borderTop: `3px solid ${saved ? UW.gold : UW.purple}`,
-      }}
-    >
-      <div className="flex flex-1 flex-col p-4">
-        {s.pending && (
-          <p
-            className="mb-2 font-bold uppercase"
-            style={{
-              fontSize: 10,
-              letterSpacing: "0.07em",
-              color: UW.inkSubtle,
-            }}
-          >
-            In review
-          </p>
-        )}
-
-        <div className="flex flex-wrap items-center gap-1.5">
-          {s.tags.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className="font-semibold uppercase"
-              style={{
-                fontSize: 9.5,
-                letterSpacing: "0.05em",
-                padding: "3px 6px",
-                backgroundColor: UW.purpleTint,
-                color: UW.purple,
-                border: `1px solid ${UW.purpleLine}`,
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <h3
-          className="mt-2.5 font-semibold"
+    <div className="relative min-h-[290px] sm:h-full">
+      <div
+        className="sm:absolute sm:inset-x-0 sm:top-0"
+        style={{
+          perspective: 1600,
+          minHeight: "100%",
+          zIndex: flipped ? 20 : 1,
+        }}
+      >
+        <div
+          className="relative transition-transform duration-500 ease-out motion-reduce:duration-0"
           style={{
-            fontFamily: FONT_SERIF,
-            fontSize: 19,
-            lineHeight: "25px",
-            color: UW.purple,
-            letterSpacing: "-0.01em",
+            transformStyle: "preserve-3d",
+            transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
+            minHeight: "100%",
           }}
         >
-          {s.title}
-        </h3>
-        <p
-          className="mt-1.5"
-          style={{ fontSize: 13.5, lineHeight: "20px", color: UW.inkMid }}
-        >
-          {s.benefit}
-        </p>
-
-        <div className="mt-auto pt-3">
-          <p style={{ fontSize: 11.5, fontWeight: 600, color: UW.inkMuted }}>
-            {contributorLine(s)}
-          </p>
-
-          {/* Community evidence. Likes and continued use are deliberately not
-              merged into one number. A newly contributed strategy has neither
-              yet, and says so rather than showing 1 of 1. */}
-          {s.pending ? (
-            <p
-              className="mt-2.5 pt-2.5"
-              style={{
-                fontSize: 11,
-                color: UW.inkSubtle,
-                borderTop: `1px solid ${UW.lineSoft}`,
-              }}
-            >
-              No community data yet — counts appear once other students try it.
-            </p>
-          ) : (
-            <>
-              <div
-                className="mt-2.5 flex items-center gap-3 pt-2.5"
-                style={{
-                  fontSize: 12,
-                  color: UW.inkSubtle,
-                  borderTop: `1px solid ${UW.lineSoft}`,
-                }}
+          {/* ── Front ───────────────────────────────────────────────── */}
+          <div
+            aria-hidden={flipped}
+            className="flex h-full min-h-[290px] flex-col"
+            style={face(false)}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p style={{ ...TYPE.label, color: UW.inkSubtle }}>
+                {s.pending ? "In review" : s.tags[0]}
+              </p>
+              <button
+                onClick={onToggleSave}
+                aria-pressed={saved}
+                aria-label={
+                  saved ? "Remove from My Quarter" : "Save to My Quarter"
+                }
+                className="-mr-1 -mt-1 flex-shrink-0 p-1"
+                style={{ color: saved ? UW.goldInk : UW.inkSubtle }}
               >
+                <Bookmark
+                  size={16}
+                  fill={saved ? UW.gold : "none"}
+                  strokeWidth={1.7}
+                />
+              </button>
+            </div>
+
+            <h3
+              className="mt-2"
+              style={{ ...TYPE.strategyTitle, color: UW.ink }}
+            >
+              {s.title}
+            </h3>
+            <p className="mt-2" style={{ ...TYPE.body, color: UW.inkMuted }}>
+              {s.benefit}
+            </p>
+
+            <div className="mt-auto pt-4">
+              <p style={{ ...TYPE.meta, color: UW.inkSubtle }}>
+                {contributorLine(s)}
+              </p>
+
+              <div className="mt-3 flex items-center gap-3">
+                <button
+                  onClick={onFlip}
+                  tabIndex={flipped ? -1 : 0}
+                  className="flex items-center gap-1.5 transition-colors"
+                  style={{
+                    ...TYPE.chip,
+                    fontWeight: 600,
+                    color: UW.purple,
+                    border: `1px solid ${UW.purpleLine}`,
+                    borderRadius: R.control,
+                    padding: "7px 14px",
+                    backgroundColor: "transparent",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.backgroundColor = UW.purpleTint)
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.backgroundColor = "transparent")
+                  }
+                >
+                  View strategy
+                  <ArrowRight size={14} />
+                </button>
+
                 <button
                   onClick={onToggleLike}
                   aria-label={liked ? "Remove like" : "Like this strategy"}
-                  className="flex items-center gap-1.5"
+                  className="ml-auto flex items-center gap-1.5"
                   style={{
+                    ...TYPE.meta,
                     color: liked ? UW.purple : UW.inkSubtle,
-                    fontWeight: 700,
                   }}
                 >
                   <Heart
-                    size={13}
+                    size={14}
                     fill={liked ? UW.purple : "none"}
                     strokeWidth={liked ? 0 : 1.6}
                   />
                   {s.likes}
-                  <span style={{ fontWeight: 500 }}>likes</span>
                 </button>
-                <span
+                <button
+                  onClick={onDiscuss}
+                  aria-label={`${commentCount} comments`}
                   className="flex items-center gap-1.5"
+                  style={{ ...TYPE.meta, color: UW.inkSubtle }}
+                >
+                  <MessageSquare size={14} strokeWidth={1.6} />
+                  {commentCount}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Back ────────────────────────────────────────────────── */}
+          <div
+            aria-hidden={!flipped}
+            className="flex min-h-full flex-col"
+            style={{
+              ...face(true),
+              boxShadow: flipped ? "0 8px 30px rgba(34,32,30,0.13)" : "none",
+            }}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p style={{ ...TYPE.label, color: UW.inkSubtle }}>
+                How to use it
+              </p>
+              <button
+                onClick={onFlip}
+                tabIndex={flipped ? 0 : -1}
+                aria-label="Back to the front of the card"
+                className="-mr-1 -mt-1 flex-shrink-0 p-1"
+                style={{ color: UW.inkSubtle }}
+              >
+                <RotateCcw size={15} strokeWidth={1.7} />
+              </button>
+            </div>
+
+            <ol className="mt-3 flex flex-col gap-2.5">
+              {s.steps.map((step, i) => (
+                <li
+                  key={i}
+                  className="flex gap-3"
+                  style={{ ...TYPE.body, color: UW.ink }}
+                >
+                  <span
+                    className="mt-px flex h-[21px] w-[21px] flex-shrink-0 items-center justify-center"
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      borderRadius: 999,
+                      backgroundColor: UW.purpleTint,
+                      color: UW.purple,
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-auto pt-4">
+              <div
+                style={{
+                  borderTop: `1px solid ${UW.lineSoft}`,
+                  paddingTop: 14,
+                }}
+              >
+                <p style={{ ...TYPE.label, color: UW.inkSubtle }}>
+                  Best time to use it
+                </p>
+                <p
+                  className="mt-1.5"
+                  style={{ ...TYPE.body, color: UW.inkMuted }}
+                >
+                  {s.bestTime}
+                  {s.effort && (
+                    <span style={{ color: UW.inkSubtle }}> · {s.effort}</span>
+                  )}
+                </p>
+              </div>
+
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={onToggleSave}
+                  tabIndex={flipped ? 0 : -1}
+                  className="flex flex-1 items-center justify-center gap-2 transition-colors"
                   style={{
-                    color: saved ? UW.goldInk : UW.inkSubtle,
-                    fontWeight: 700,
+                    ...TYPE.chip,
+                    fontWeight: 600,
+                    padding: "11px 14px",
+                    borderRadius: R.control,
+                    backgroundColor: saved ? UW.goldTint : UW.purple,
+                    color: saved ? UW.goldInk : UW.white,
+                    border: `1px solid ${saved ? UW.goldLine : UW.purple}`,
                   }}
                 >
-                  <Bookmark
-                    size={12}
-                    fill={saved ? UW.gold : "none"}
-                    strokeWidth={1.7}
-                  />
-                  {s.saves}
-                  <span style={{ fontWeight: 500 }}>saved</span>
-                </span>
-                <span
-                  className="ml-auto"
-                  title={`${s.stillUsing} of ${s.tried} students who tried it`}
-                  style={{ fontWeight: 600, color: UW.inkMuted }}
+                  {saved ? <Check size={15} /> : <Bookmark size={15} />}
+                  {saved ? "Saved" : "Add to My Quarter"}
+                </button>
+                <button
+                  onClick={onThank}
+                  tabIndex={flipped ? 0 : -1}
+                  aria-label={
+                    thanked ? "Contributor thanked" : "Thank the contributor"
+                  }
+                  title={
+                    thanked ? "Contributor thanked" : "Thank the contributor"
+                  }
+                  className="flex flex-shrink-0 items-center justify-center transition-colors"
+                  style={{
+                    width: 44,
+                    borderRadius: R.control,
+                    fontSize: 15,
+                    backgroundColor: thanked ? UW.purpleTint : UW.card,
+                    border: `1px solid ${thanked ? UW.purpleLine : UW.line}`,
+                  }}
                 >
-                  {pct}% kept it
-                </span>
+                  🙏
+                </button>
               </div>
-            </>
-          )}
+
+              <button
+                onClick={onDiscuss}
+                tabIndex={flipped ? 0 : -1}
+                className="mt-2 w-full transition-colors"
+                style={{
+                  ...TYPE.chip,
+                  fontFamily: FONT_SANS,
+                  fontWeight: 600,
+                  padding: "10px 14px",
+                  borderRadius: R.control,
+                  color: UW.goldInk,
+                  border: `1px solid ${UW.goldLine}`,
+                  backgroundColor: "transparent",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = UW.goldTint)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
+              >
+                Ask a question / Add a comment
+                {commentCount > 0 && (
+                  <span style={{ fontWeight: 400 }}> · {commentCount}</span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Actions */}
-      <div
-        className="flex items-stretch"
-        style={{ borderTop: `1px solid ${UW.lineSoft}` }}
-      >
-        <button
-          onClick={onOpen}
-          className="flex flex-1 items-center justify-center gap-1.5 transition-colors"
-          style={{
-            fontSize: 12.5,
-            fontWeight: 700,
-            color: UW.purple,
-            backgroundColor: "transparent",
-            padding: "10px 8px",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = UW.purple;
-            e.currentTarget.style.color = UW.white;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = UW.purple;
-          }}
-        >
-          View strategy
-          <ArrowRight size={13} />
-        </button>
-
-        <button
-          onClick={onOpen}
-          aria-label={`Open discussion, ${commentCount} comments`}
-          className="flex items-center justify-center gap-1.5 transition-colors hover:bg-[#F2EFF6]"
-          style={{
-            fontSize: 12,
-            fontWeight: 600,
-            color: commentCount ? UW.inkMid : UW.inkSubtle,
-            padding: "10px 12px",
-            borderLeft: `1px solid ${UW.lineSoft}`,
-          }}
-        >
-          <MessageSquare size={13} />
-          {commentCount}
-        </button>
-
-        <button
-          onClick={onToggleSave}
-          aria-pressed={saved}
-          aria-label={saved ? "Remove from My Quarter" : "Save to My Quarter"}
-          className="flex items-center justify-center transition-colors"
-          style={{
-            padding: "10px 12px",
-            borderLeft: `1px solid ${UW.lineSoft}`,
-            backgroundColor: saved ? UW.goldTint : "transparent",
-            color: saved ? UW.goldInk : UW.inkSubtle,
-          }}
-        >
-          <Bookmark
-            size={14}
-            fill={saved ? UW.gold : "none"}
-            strokeWidth={1.8}
-          />
-        </button>
-      </div>
-    </article>
+    </div>
   );
 }

@@ -49,7 +49,7 @@ export function keptPercent(s: Strategy): number {
 // the person using the board likes and saves things.
 export function rankAll(basis: RankBasis, pool: Strategy[] = STRATEGIES) {
   return [...pool]
-    .filter(s => !s.pending)
+    .filter((s) => !s.pending)
     .sort((a, b) => rankValue(b, basis) - rankValue(a, basis))
     .map((strategy, i) => ({ rank: i + 1, strategy }));
 }
@@ -60,7 +60,7 @@ export function rankOf(
   basis: RankBasis,
   pool: Strategy[] = STRATEGIES,
 ): number {
-  return rankAll(basis, pool).findIndex(r => r.strategy.id === id) + 1;
+  return rankAll(basis, pool).findIndex((r) => r.strategy.id === id) + 1;
 }
 
 /** Rank within a single challenge, used for the badge on a card. */
@@ -70,11 +70,13 @@ export function rankInChallenge(
   basis: RankBasis,
   pool: Strategy[] = STRATEGIES,
 ): number {
-  const within = pool.filter(x => !x.pending && x.challenges.includes(challenge));
+  const within = pool.filter(
+    (x) => !x.pending && x.challenges.includes(challenge),
+  );
   return (
     [...within]
       .sort((a, b) => rankValue(b, basis) - rankValue(a, basis))
-      .findIndex(x => x.id === s.id) + 1
+      .findIndex((x) => x.id === s.id) + 1
   );
 }
 
@@ -88,9 +90,14 @@ export function badgeFor(
   pool: Strategy[] = STRATEGIES,
 ): { text: string; strong: boolean } | null {
   const overall = rankOf(s.id, basis, pool);
-  const basisLabel = RANK_BASES.find(b => b.id === basis)!.short.toLowerCase();
+  const basisLabel = RANK_BASES.find(
+    (b) => b.id === basis,
+  )!.short.toLowerCase();
   if (overall > 0 && overall <= 3) {
-    return { text: `#${overall} most ${basisLabel} on the board`, strong: true };
+    return {
+      text: `#${overall} most ${basisLabel} on the board`,
+      strong: true,
+    };
   }
   for (const challenge of s.challenges) {
     if (rankInChallenge(s, challenge, basis, pool) === 1) {
@@ -139,7 +146,7 @@ export function filterStrategies(
   f: Filters,
   pool: Strategy[] = STRATEGIES,
 ): Strategy[] {
-  const narrowed = pool.filter(s => {
+  const narrowed = pool.filter((s) => {
     if (f.challenge && !s.challenges.includes(f.challenge)) return false;
     if (f.program !== ALL_PROGRAMS && s.program !== f.program) return false;
     if (f.courseType && !s.courseTypes.includes(f.courseType)) return false;
@@ -150,7 +157,7 @@ export function filterStrategies(
     // Relevance order wins while a query is active; an explicit A-Z choice is
     // still honoured because that is a deliberate reordering.
     const hits = searchStrategies(narrowed, f.query);
-    const ordered = hits.map(h => h.strategy);
+    const ordered = hits.map((h) => h.strategy);
     return f.sort === "az"
       ? [...ordered].sort((a, b) => a.title.localeCompare(b.title))
       : ordered;
@@ -158,13 +165,20 @@ export function filterStrategies(
 
   const sorted = [...narrowed];
   if (f.sort === "az") sorted.sort((a, b) => a.title.localeCompare(b.title));
-  else sorted.sort((a, b) => rankValue(b, f.sort as RankBasis) - rankValue(a, f.sort as RankBasis));
+  else
+    sorted.sort(
+      (a, b) =>
+        rankValue(b, f.sort as RankBasis) - rankValue(a, f.sort as RankBasis),
+    );
   return sorted;
 }
 
 export function countsByChallenge(pool: Strategy[] = STRATEGIES) {
   return Object.fromEntries(
-    CHALLENGES.map(c => [c, pool.filter(s => s.challenges.includes(c)).length]),
+    CHALLENGES.map((c) => [
+      c,
+      pool.filter((s) => s.challenges.includes(c)).length,
+    ]),
   ) as Record<string, number>;
 }
 
@@ -176,6 +190,6 @@ export function boardStats(pool: Strategy[] = STRATEGIES) {
     tried,
     stillUsing,
     keptPct: tried ? Math.round((stillUsing / tried) * 100) : 0,
-    programs: new Set(pool.map(s => s.program)).size,
+    programs: new Set(pool.map((s) => s.program)).size,
   };
 }
