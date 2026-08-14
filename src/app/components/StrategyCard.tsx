@@ -157,70 +157,71 @@ export function StrategyCard({
               </div>
             </div>
 
-            <div
-              className="mt-3.5 flex flex-wrap items-center gap-x-4 gap-y-1 pt-3.5"
-              style={{ borderTop: `1px solid ${UW.lineSoft}`, ...TYPE.meta }}
-            >
-              {s.pending ? (
-                <span style={{ color: UW.inkSubtle }}>
-                  No community data yet
-                </span>
-              ) : (
-                <>
-                  <button
-                    onClick={onToggleLike}
-                    aria-label={liked ? "Remove like" : "Like this strategy"}
-                    className="flex items-center gap-1.5"
-                    style={{ color: liked ? UW.purple : UW.inkMuted }}
-                  >
-                    <Heart
-                      size={15}
-                      fill={liked ? UW.purple : "none"}
-                      strokeWidth={liked ? 0 : 1.6}
-                    />
-                    {s.likes}
-                  </button>
-                  <span style={{ color: UW.inkMuted }}>{s.tried} tried</span>
-                  <span style={{ fontWeight: 700, color: UW.purple }}>
-                    {s.stillUsing} still using
+            <div className="mt-auto pt-4">
+              <div
+                className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-3.5"
+                style={{ borderTop: `1px solid ${UW.lineSoft}`, ...TYPE.meta }}
+              >
+                {s.pending ? (
+                  <span style={{ color: UW.inkSubtle }}>
+                    No community data yet
                   </span>
-                  <button
-                    onClick={onDiscuss}
-                    aria-label={`${commentCount} comments`}
-                    className="ml-auto flex items-center gap-1.5"
-                    style={{ color: UW.inkSubtle }}
-                  >
-                    <MessageSquare size={14} strokeWidth={1.6} />
-                    {commentCount}
-                  </button>
-                </>
-              )}
-            </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={onToggleLike}
+                      aria-label={liked ? "Remove like" : "Like this strategy"}
+                      className="flex items-center gap-1.5"
+                      style={{ color: liked ? UW.purple : UW.inkMuted }}
+                    >
+                      <Heart
+                        size={15}
+                        fill={liked ? UW.purple : "none"}
+                        strokeWidth={liked ? 0 : 1.6}
+                      />
+                      {s.likes}
+                    </button>
+                    <span style={{ color: UW.inkMuted }}>{s.tried} tried</span>
+                    <span style={{ fontWeight: 700, color: UW.purple }}>
+                      {s.stillUsing} still using
+                    </span>
+                    <button
+                      onClick={onDiscuss}
+                      aria-label={`${commentCount} comments`}
+                      className="ml-auto flex items-center gap-1.5"
+                      style={{ color: UW.inkSubtle }}
+                    >
+                      <MessageSquare size={14} strokeWidth={1.6} />
+                      {commentCount}
+                    </button>
+                  </>
+                )}
+              </div>
 
-            <button
-              onClick={onFlip}
-              tabIndex={flipped ? -1 : 0}
-              className="mt-auto flex w-full items-center justify-center gap-2 transition-colors"
-              style={{
-                ...TYPE.chip,
-                fontWeight: 600,
-                color: UW.ink,
-                border: `1px solid ${UW.line}`,
-                borderRadius: R.control,
-                padding: "12px 14px",
-                marginTop: 20,
-                backgroundColor: "transparent",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.backgroundColor = UW.band)
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.backgroundColor = "transparent")
-              }
-            >
-              View details
-              <ChevronRight size={15} />
-            </button>
+              <button
+                onClick={onFlip}
+                tabIndex={flipped ? -1 : 0}
+                className="mt-3 flex w-full items-center justify-center gap-2 transition-colors"
+                style={{
+                  ...TYPE.chip,
+                  fontWeight: 600,
+                  color: UW.ink,
+                  border: `1px solid ${UW.line}`,
+                  borderRadius: R.control,
+                  padding: "12px 14px",
+                  backgroundColor: "transparent",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.backgroundColor = UW.band)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.backgroundColor = "transparent")
+                }
+              >
+                View details
+                <ChevronRight size={15} />
+              </button>
+            </div>
           </div>
 
           {/* ── Back ────────────────────────────────────────────────── */}
