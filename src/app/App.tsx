@@ -49,7 +49,6 @@ export default function App() {
   const [flipped, setFlipped] = useState<Set<number>>(new Set());
   const [saved, setSaved] = useState<number[]>([]);
   const [liked, setLiked] = useState<Set<number>>(new Set());
-  const [thanked, setThanked] = useState<Set<number>>(new Set());
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
   const [threads, setThreads] = useState<Record<number, Comment[]>>(() =>
     Object.fromEntries(STRATEGIES.map((s) => [s.id, seedCommentsFor(s.id)])),
@@ -284,14 +283,10 @@ export default function App() {
                       flipped={flipped.has(s.id)}
                       saved={saved.includes(s.id)}
                       liked={liked.has(s.id)}
-                      thanked={thanked.has(s.id)}
                       commentCount={commentCounts[s.id] ?? 0}
                       onFlip={() => setFlipped((prev) => toggle(prev, s.id))}
                       onToggleSave={() => toggleSave(s.id)}
                       onToggleLike={() => toggleLike(s.id)}
-                      onThank={() =>
-                        setThanked((prev) => new Set(prev).add(s.id))
-                      }
                       onDiscuss={() => setDiscussId(s.id)}
                     />
                   </div>
@@ -412,12 +407,10 @@ function YourSubmissions({
               flipped={flipped.has(s.id)}
               saved={false}
               liked={false}
-              thanked={false}
               commentCount={commentCounts[s.id] ?? 0}
               onFlip={() => onFlip(s.id)}
               onToggleSave={() => {}}
               onToggleLike={() => {}}
-              onThank={() => {}}
               onDiscuss={() => onDiscuss(s.id)}
             />
           </div>

@@ -5,7 +5,6 @@ import {
   MessageSquare,
   ChevronRight,
   Check,
-  HeartHandshake,
   CircleUserRound,
 } from "lucide-react";
 import { contributorLine, type Strategy } from "../data";
@@ -29,24 +28,20 @@ export function StrategyCard({
   flipped,
   saved,
   liked,
-  thanked,
   commentCount,
   onFlip,
   onToggleSave,
   onToggleLike,
-  onThank,
   onDiscuss,
 }: {
   strategy: Strategy;
   flipped: boolean;
   saved: boolean;
   liked: boolean;
-  thanked: boolean;
   commentCount: number;
   onFlip: () => void;
   onToggleSave: () => void;
   onToggleLike: () => void;
-  onThank: () => void;
   onDiscuss: () => void;
 }) {
   // The front is always the face in normal flow, so it alone sets the card's
@@ -311,17 +306,6 @@ export function StrategyCard({
                   active={commentCount > 0}
                 >
                   <MessageSquare size={16} strokeWidth={1.7} />
-                </IconAction>
-
-                <IconAction
-                  onClick={onThank}
-                  tabIndex={flipped ? 0 : -1}
-                  label={
-                    thanked ? "Contributor thanked" : "Thank the contributor"
-                  }
-                  active={thanked}
-                >
-                  <HeartHandshake size={16} strokeWidth={1.7} />
                 </IconAction>
               </div>
             </div>
