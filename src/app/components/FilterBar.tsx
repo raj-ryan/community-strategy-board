@@ -3,15 +3,19 @@ import {
   ALL_PROGRAMS,
   CHALLENGES,
   COURSE_TYPES,
+  PROGRAMS,
+  PROGRAM_GROUPS,
   shortChallenge,
 } from "../data";
-import { ProgramPicker } from "./ProgramPicker";
-import { UW, R, TYPE, CONTROL_BOX, FONT_SANS } from "../uw";
+import { Dropdown, type OptionGroup } from "./Dropdown";
+import { UW, R, TYPE, FONT_SANS } from "../uw";
 
 // One question, one row of answers, and two quiet dropdowns.
 //
 // The chips are the problems students named most often, not a full taxonomy, so
 // search sits above them for everything they do not cover.
+
+const ALL_COURSE_TYPES = "All course types";
 
 export function FilterBar({
   challenge,
@@ -38,6 +42,31 @@ export function FilterBar({
   onCourseType: (ct: string | null) => void;
   onQuery: (q: string) => void;
 }) {
+  const programGroups: OptionGroup[] = [
+    {
+      options: [
+        { value: ALL_PROGRAMS, label: ALL_PROGRAMS, count: programTotal },
+      ],
+    },
+    ...PROGRAM_GROUPS.map((g) => ({
+      label: g.school,
+      options: g.programs.map((p) => ({
+        value: p,
+        label: p,
+        count: programCounts[p] ?? 0,
+      })),
+    })),
+  ];
+
+  const courseTypeGroups: OptionGroup[] = [
+    {
+      options: [
+        { value: ALL_COURSE_TYPES, label: ALL_COURSE_TYPES },
+        ...COURSE_TYPES.map((ct) => ({ value: ct, label: ct })),
+      ],
+    },
+  ];
+
   return (
     <section>
       <div
@@ -120,31 +149,26 @@ export function FilterBar({
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        <ProgramPicker
-          program={program}
-          counts={programCounts}
-          totalCount={programTotal}
+        <Dropdown
+          ariaLabel="Program"
+          value={program}
+          defaultValue={ALL_PROGRAMS}
+          groups={programGroups}
           onChange={onProgram}
+          searchable
+          searchPlaceholder="Search programs or schools"
+          panelWidth={330}
+          footer={`${PROGRAMS.length} programs across ${PROGRAM_GROUPS.length} schools and colleges. Counts follow the filters you have already set.`}
         />
-        <select
-          value={courseType ?? ""}
-          onChange={(e) => onCourseType(e.target.value || null)}
-          aria-label="Course type"
-          style={{
-            ...CONTROL_BOX,
-            fontWeight: courseType ? 600 : CONTROL_BOX.fontWeight,
-            backgroundColor: UW.card,
-            color: courseType ? UW.purple : UW.inkMid,
-            border: `1px solid ${courseType ? UW.purpleLine : UW.line}`,
-          }}
-        >
-          <option value="">All course types</option>
-          {COURSE_TYPES.map((ct) => (
-            <option key={ct} value={ct}>
-              {ct}
-            </option>
-          ))}
-        </select>
+
+        <Dropdown
+          ariaLabel="Course type"
+          value={courseType ?? ALL_COURSE_TYPES}
+          defaultValue={ALL_COURSE_TYPES}
+          groups={courseTypeGroups}
+          onChange={(v) => onCourseType(v === ALL_COURSE_TYPES ? null : v)}
+          panelWidth={240}
+        />
 
         {(challenge || courseType || program !== ALL_PROGRAMS || query) && (
           <button
