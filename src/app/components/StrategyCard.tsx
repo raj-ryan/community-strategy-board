@@ -59,28 +59,20 @@ export function StrategyCard({
     backgroundColor: UW.card,
     border: `1px solid ${saved && !isBack ? UW.goldLine : UW.line}`,
     borderRadius: R.card,
-    padding: 20,
+    padding: 24,
     ...(isBack
       ? { position: "absolute", inset: 0, transform: "rotateY(180deg)" }
       : { position: "relative" }),
   });
 
   return (
-    <div className="relative min-h-[430px] sm:h-full">
-      <div
-        className="sm:absolute sm:inset-x-0 sm:top-0"
-        style={{
-          perspective: 1600,
-          minHeight: "100%",
-          zIndex: flipped ? 20 : 1,
-        }}
-      >
+    <div className="h-full min-h-[430px]">
+      <div className="h-full" style={{ perspective: 1600 }}>
         <div
-          className="relative transition-transform duration-500 ease-out motion-reduce:duration-0"
+          className="relative h-full transition-transform duration-500 ease-out motion-reduce:duration-0"
           style={{
             transformStyle: "preserve-3d",
             transform: flipped ? "rotateY(180deg)" : "rotateY(0deg)",
-            minHeight: "100%",
           }}
         >
           {/* ── Front ───────────────────────────────────────────────── */}
@@ -227,7 +219,7 @@ export function StrategyCard({
           {/* ── Back ────────────────────────────────────────────────── */}
           <div
             aria-hidden={!flipped}
-            className="flex flex-col overflow-hidden"
+            className="flex h-full flex-col overflow-hidden"
             style={face(true)}
           >
             <div className="flex items-start justify-between gap-3">
@@ -245,7 +237,7 @@ export function StrategyCard({
               </button>
             </div>
 
-            <ol className="csb-rail mt-3 flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto">
+            <ol className="csb-rail mt-4 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
               {s.steps.map((step, i) => (
                 <li
                   key={i}
